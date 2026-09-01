@@ -2,7 +2,9 @@ from app.services.agent_generator import AgentPopulationGenerator
 from app.services.dataset_reader import DatasetLoaderService
 from app.services.dna_profiler import BehavioralDNAProfiler
 from app.services.ingestion import PaymentIngestionService
+from app.services.payment_twin import PaymentTwinEngine
 from app.services.razorpay_client import RazorpayClient
+from app.services.simulation_runner import SimulationRunner
 
 __all__ = [
     "RazorpayClient",
@@ -10,4 +12,6 @@ __all__ = [
     "DatasetLoaderService",
     "BehavioralDNAProfiler",
     "AgentPopulationGenerator",
+    "PaymentTwinEngine",
+    "SimulationRunner",
 ]
