@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { PageId } from "@/types/navigation";
 import { ProvenanceType, SystemHealthStatus } from "@/types/provenance";
+import { GuardianTwinHandoff } from "@/types/guardian";
 
 interface AppState {
   activePage: PageId;
@@ -14,6 +15,9 @@ interface AppState {
   setSelectedAlertId: (id: string | null) => void;
   isDrawerOpen: boolean;
   setIsDrawerOpen: (open: boolean) => void;
+
+  activeTwinHandoff: GuardianTwinHandoff | null;
+  setActiveTwinHandoff: (handoff: GuardianTwinHandoff | null) => void;
 
   currentProvenance: ProvenanceType;
   setCurrentProvenance: (prov: ProvenanceType) => void;
@@ -35,9 +39,13 @@ export const useAppStore = create<AppState>((set) => ({
   isDrawerOpen: false,
   setIsDrawerOpen: (open) => set({ isDrawerOpen: open }),
 
+  activeTwinHandoff: null,
+  setActiveTwinHandoff: (handoff) => set({ activeTwinHandoff: handoff }),
+
   currentProvenance: "UNAVAILABLE",
   setCurrentProvenance: (prov) => set({ currentProvenance: prov }),
 
   systemHealth: "unavailable",
   setSystemHealth: (status) => set({ systemHealth: status }),
 }));
+
