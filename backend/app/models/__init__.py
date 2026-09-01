@@ -46,6 +46,18 @@ from app.models.payment import (
     RazorpayPaymentCollection,
     RazorpayPaymentItem,
 )
+from app.models.optimization import (
+    ConstraintType,
+    InfeasibleScenarioItem,
+    MerchantConstraint,
+    ObjectiveDefinition,
+    ObjectiveDirection,
+    ObjectiveType,
+    OptimizationRequest,
+    ParetoFrontierResult,
+    ParetoScenarioItem,
+    TradeoffSummary,
+)
 from app.models.scenario import (
     AttributionStep,
     InterventionMode,
@@ -140,4 +152,14 @@ __all__ = [
     "ScenarioMatrixRequest",
     "ScenarioMatrixResponse",
     "MatrixScenarioRankItem",
+    "ObjectiveType",
+    "ObjectiveDirection",
+    "ObjectiveDefinition",
+    "ConstraintType",
+    "MerchantConstraint",
+    "ParetoScenarioItem",
+    "InfeasibleScenarioItem",
+    "TradeoffSummary",
+    "OptimizationRequest",
+    "ParetoFrontierResult",
 ]
