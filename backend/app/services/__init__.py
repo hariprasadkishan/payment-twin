@@ -1,7 +1,4 @@
-"""
-Services and business logic package.
-"""
-
+from app.services.agent_generator import AgentPopulationGenerator
 from app.services.dataset_reader import DatasetLoaderService
 from app.services.dna_profiler import BehavioralDNAProfiler
 from app.services.ingestion import PaymentIngestionService
@@ -12,4 +9,5 @@ __all__ = [
     "PaymentIngestionService",
     "DatasetLoaderService",
     "BehavioralDNAProfiler",
+    "AgentPopulationGenerator",
 ]
