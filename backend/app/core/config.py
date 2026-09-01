@@ -39,6 +39,15 @@ class Settings(BaseSettings):
             return [str(i).strip() for i in v if str(i).strip()]
         return v
 
+    # Razorpay API Credentials & Settings
+    RAZORPAY_KEY_ID: Union[str, None] = None
+    RAZORPAY_KEY_SECRET: Union[str, None] = None
+    RAZORPAY_BASE_URL: str = "https://api.razorpay.com/v1"
+    RAZORPAY_TIMEOUT_SECONDS: float = 15.0
+
+    # Storage Paths
+    DATA_RAW_DIR: str = "data/raw"
+
     model_config = SettingsConfigDict(
         env_file=(".env", "../.env"),
         env_file_encoding="utf-8",

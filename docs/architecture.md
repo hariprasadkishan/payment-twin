@@ -119,12 +119,17 @@ classDiagram
 ```
 
 ### 2.1 Observed Data (Empirical Ground Truth)
-Observed data encompasses raw, verifiable transaction and event logs recorded from Razorpay APIs, webhooks, or benchmark test datasets.
-- **Transaction Logs**: Payment IDs, timestamps, order amounts, currency, merchant categories.
-- **Payment Method Telemetry**: UPI (Collect vs. Intent), Credit/Debit Cards, Netbanking (Bank ID), Wallets, EMI.
-- **Gateway & Network Telemetry**: Upstream gateway responses, HTTP/Acquirer response codes, gateway processing latencies ($ms$), 3DS authorization challenges.
-- **Terminal States**: Captured, Authorized, Failed, Cancelled, Refunded, Expired.
-- **Client Metadata**: Device category (Mobile, Desktop, Tablet), Operating System, Browser context, Network quality hints.
+Observed data encompasses raw, verifiable transaction and event logs recorded from Razorpay APIs (`GET /v1/payments`), webhooks, or test datasets.
+- **Transaction Identifiers**: Payment ID (`pay_...`), Order ID (`order_...`), Invoice ID.
+- **Financial Values**: Gross Amount (paise/INR), Currency (`INR`), Gateway Fee, Tax on Fee, Refunded Amount.
+- **Payment Method Telemetry**: Method category (`card`, `upi`, `netbanking`, `wallet`, `emi`), Bank Identifier (e.g. `HDFC`, `SBIN`), Wallet code (`paytm`, `mobikwik`), VPA provider handle (`okaxis`, `okhdfcbank`).
+- **Terminal States**: `captured`, `authorized`, `failed`, `refunded`.
+- **Diagnostic Error Fields (on failures)**: `error_code`, `error_description`, `error_source` (`customer`, `gateway`, `bank`), `error_step` (`payment_authentication`, `payment_authorization`), `error_reason` (`incorrect_otp`, `insufficient_funds`, `payment_cancelled`).
+- **Acquirer Telemetry**: Acquirer RRN, Auth Code, UPI Transaction ID.
+- **Timestamps**: `created_at` UNIX epoch and ISO 8601 UTC.
+
+> [!NOTE]
+> **Data Boundary**: Raw Razorpay payment data does **not** include unobserved pre-checkout cart abandonments or psychological customer traits (e.g., price elasticity, patience thresholds). Those are modeled independently in the Behavioral DNA and Synthetic Agent tiers.
 
 ### 2.2 Derived Behavioural Statistics (Behavioral DNA)
 Behavioral DNA represents the mathematical and statistical profile of the merchant's customer base, derived by fitting parametric and non-parametric distributions over observed data:
