@@ -16,37 +16,7 @@ import { useAppStore } from "@/store/useAppStore";
 import { PageId, NavSection } from "@/types/navigation";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
-
-const NAV_SECTIONS: NavSection[] = [
-  {
-    title: "OVERVIEW",
-    items: [
-      { id: "overview", label: "Command Center" },
-    ],
-  },
-  {
-    title: "INTELLIGENCE",
-    items: [
-      { id: "dna", label: "Behavioral DNA" },
-      { id: "agents", label: "Customer Agents" },
-      { id: "guardian", label: "Payment Guardian", badge: 0, badgeVariant: "neutral" },
-    ],
-  },
-  {
-    title: "SIMULATION",
-    items: [
-      { id: "twin", label: "Payment Twin" },
-      { id: "scenarios", label: "What-If Studio" },
-      { id: "pareto", label: "Pareto Explorer" },
-    ],
-  },
-  {
-    title: "SYSTEM",
-    items: [
-      { id: "settings", label: "Data & Settings" },
-    ],
-  },
-];
+import { useGuardianStatus } from "@/hooks/useGuardian";
 
 const ICONS: Record<PageId, React.ElementType> = {
   overview: LayoutDashboard,
@@ -61,6 +31,44 @@ const ICONS: Record<PageId, React.ElementType> = {
 
 export const Sidebar: React.FC = () => {
   const { activePage, setActivePage, isSidebarCollapsed, toggleSidebar } = useAppStore();
+  const { data: guardianStatus } = useGuardianStatus();
+  const activeAlertsCount = guardianStatus?.active_alerts_count ?? 0;
+
+  const navSections: NavSection[] = [
+    {
+      title: "OVERVIEW",
+      items: [
+        { id: "overview", label: "Command Center" },
+      ],
+    },
+    {
+      title: "INTELLIGENCE",
+      items: [
+        { id: "dna", label: "Behavioral DNA" },
+        { id: "agents", label: "Customer Agents" },
+        { 
+          id: "guardian", 
+          label: "Payment Guardian", 
+          badge: activeAlertsCount > 0 ? activeAlertsCount : undefined, 
+          badgeVariant: activeAlertsCount > 0 ? "danger" : "neutral" 
+        },
+      ],
+    },
+    {
+      title: "SIMULATION",
+      items: [
+        { id: "twin", label: "Payment Twin" },
+        { id: "scenarios", label: "What-If Studio" },
+        { id: "pareto", label: "Pareto Explorer" },
+      ],
+    },
+    {
+      title: "SYSTEM",
+      items: [
+        { id: "settings", label: "Data & Settings" },
+      ],
+    },
+  ];
 
   return (
     <aside
@@ -105,7 +113,7 @@ export const Sidebar: React.FC = () => {
 
         {/* Nav Sections */}
         <nav className="p-3 space-y-6 overflow-y-auto max-h-[calc(100vh-10rem)]">
-          {NAV_SECTIONS.map((section) => (
+          {navSections.map((section) => (
             <div key={section.title} className="space-y-1">
               {!isSidebarCollapsed && (
                 <span className="px-2 text-[10px] font-mono font-semibold text-twin-slate/70 tracking-wider uppercase">
