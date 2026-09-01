@@ -1,17 +1,16 @@
-"""
-Data ingestion API endpoints.
-"""
-
-from fastapi import APIRouter, Depends, status
+from typing import Optional
+from fastapi import APIRouter, Depends, Query, status
+from app.models.dataset import DatasetListResponse, DatasetSummaryResponse
 from app.models.payment import (
     PaymentIngestionRequest,
     PaymentIngestionResponse,
     RazorpayConnectionTestResponse,
 )
+from app.services.dataset_reader import DatasetLoaderService
 from app.services.ingestion import PaymentIngestionService
 from app.services.razorpay_client import RazorpayClient
 
-router = APIRouter(prefix="/data", tags=["Data Ingestion"])
+router = APIRouter(prefix="/data", tags=["Data Ingestion & Datasets"])
 
 
 def get_ingestion_service() -> PaymentIngestionService:
@@ -26,6 +25,13 @@ def get_razorpay_client() -> RazorpayClient:
     Dependency provider for RazorpayClient.
     """
     return RazorpayClient()
+
+
+def get_dataset_loader_service() -> DatasetLoaderService:
+    """
+    Dependency provider for DatasetLoaderService.
+    """
+    return DatasetLoaderService()
 
 
 @router.get(
@@ -63,3 +69,50 @@ async def ingest_payments(
     Triggers payment data ingestion and normalization.
     """
     return await service.ingest_payments(request)
+
+
+@router.get(
+    "/datasets",
+    response_model=DatasetListResponse,
+    status_code=status.HTTP_200_OK,
+    summary="List Available Raw Datasets",
+    description="Inspects data/raw/ and lists all available JSONL payment datasets with file health and record counts.",
+)
+def list_datasets(
+    loader: DatasetLoaderService = Depends(get_dataset_loader_service),
+) -> DatasetListResponse:
+    """
+    Lists stored raw datasets and their validation status.
+    """
+    datasets = loader.list_dataset_files()
+    if not datasets:
+        return DatasetListResponse(
+            status="empty",
+            message="No payment datasets are currently available.",
+            total_datasets=0,
+            datasets=[],
+        )
+
+    return DatasetListResponse(
+        status="ok",
+        message="Datasets retrieved successfully.",
+        total_datasets=len(datasets),
+        datasets=datasets,
+    )
+
+
+@router.get(
+    "/datasets/summary",
+    response_model=DatasetSummaryResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Dataset Statistical Summary",
+    description="Computes aggregate financial, method, and status metrics over raw payment datasets.",
+)
+def get_dataset_summary(
+    filename: Optional[str] = Query(default=None, description="Optional specific JSONL filename to analyze"),
+    loader: DatasetLoaderService = Depends(get_dataset_loader_service),
+) -> DatasetSummaryResponse:
+    """
+    Generates summary statistics for a specific dataset or across all available datasets.
+    """
+    return loader.compute_summary(filename=filename)
