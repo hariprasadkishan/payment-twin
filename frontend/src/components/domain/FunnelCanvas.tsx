@@ -38,7 +38,7 @@ export interface FunnelCanvasProps {
 export const FunnelCanvas: React.FC<FunnelCanvasProps> = ({
   simulationResult,
   isSimulating = false,
-  height = 360,
+  height = 420,
   className,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -54,10 +54,10 @@ export const FunnelCanvas: React.FC<FunnelCanvasProps> = ({
     { id: "auth", label: "05. Auth / 3DS", xRatio: 0.64, yRatio: 0.5, type: "funnel", unit: "attempts" },
     { id: "gateway", label: "06. Gateway", xRatio: 0.78, yRatio: 0.5, type: "funnel", unit: "attempts" },
     // Terminal outcome nodes (stacked on the right)
-    { id: "captured", label: "Captured", xRatio: 0.92, yRatio: 0.25, type: "terminal", unit: "orders", statusColor: "#10B981" },
-    { id: "retry", label: "Retried", xRatio: 0.92, yRatio: 0.45, type: "terminal", unit: "retries", statusColor: "#F59E0B" },
-    { id: "failed", label: "Declined", xRatio: 0.92, yRatio: 0.65, type: "terminal", unit: "failed", statusColor: "#EF4444" },
-    { id: "abandoned", label: "Abandoned", xRatio: 0.92, yRatio: 0.85, type: "terminal", unit: "dropped", statusColor: "#64748B" },
+    { id: "captured", label: "Captured", xRatio: 0.92, yRatio: 0.22, type: "terminal", unit: "orders", statusColor: "#10B981" },
+    { id: "retry", label: "Retried", xRatio: 0.92, yRatio: 0.42, type: "terminal", unit: "retries", statusColor: "#F59E0B" },
+    { id: "failed", label: "Declined", xRatio: 0.92, yRatio: 0.62, type: "terminal", unit: "failed", statusColor: "#EF4444" },
+    { id: "abandoned", label: "Abandoned", xRatio: 0.92, yRatio: 0.82, type: "terminal", unit: "dropped", statusColor: "#64748B" },
   ];
 
   // Map counts from simulationResult if present
@@ -96,7 +96,7 @@ export const FunnelCanvas: React.FC<FunnelCanvasProps> = ({
     };
 
     // Initialize particles
-    const particleCount = isSimulating ? 160 : simulationResult ? 80 : 40;
+    const particleCount = isSimulating ? 180 : simulationResult ? 90 : 45;
     const particles: FunnelParticle[] = [];
     const methods: ("upi" | "card" | "netbanking")[] = ["upi", "card", "netbanking"];
 
@@ -114,7 +114,7 @@ export const FunnelCanvas: React.FC<FunnelCanvasProps> = ({
         x: width * 0.08,
         y: height * 0.5,
         radius: Math.random() * 2 + 2,
-        speed: (Math.random() * 0.003 + 0.002) * (isSimulating ? 2.5 : 1),
+        speed: (Math.random() * 0.0035 + 0.002) * (isSimulating ? 2.5 : 1),
         progress: Math.random(),
         stageIndex: 0,
         method: chosenMethod,
@@ -130,7 +130,7 @@ export const FunnelCanvas: React.FC<FunnelCanvasProps> = ({
       ctx.clearRect(0, 0, width, height);
 
       // 1. Draw Funnel Pipeline Spine & Connectors
-      ctx.strokeStyle = "rgba(28, 37, 56, 0.7)";
+      ctx.strokeStyle = "rgba(28, 37, 56, 0.75)";
       ctx.lineWidth = 2;
       ctx.setLineDash([4, 4]);
 
@@ -215,10 +215,10 @@ export const FunnelCanvas: React.FC<FunnelCanvasProps> = ({
         ctx.save();
         // Node Background Box
         const isTerm = node.type === "terminal";
-        const boxWidth = isTerm ? 100 : 92;
-        const boxHeight = isTerm ? 28 : 42;
+        const boxWidth = isTerm ? 104 : 96;
+        const boxHeight = isTerm ? 30 : 44;
 
-        ctx.fillStyle = isTerm ? "rgba(15, 20, 34, 0.95)" : "rgba(15, 20, 34, 0.85)";
+        ctx.fillStyle = isTerm ? "rgba(15, 20, 34, 0.95)" : "rgba(15, 20, 34, 0.88)";
         ctx.strokeStyle = node.statusColor || "rgba(28, 37, 56, 0.9)";
         ctx.lineWidth = 1;
 
@@ -226,7 +226,7 @@ export const FunnelCanvas: React.FC<FunnelCanvasProps> = ({
         const rx = nx - boxWidth / 2;
         const ry = ny - boxHeight / 2;
         ctx.beginPath();
-        ctx.roundRect(rx, ry, boxWidth, boxHeight, 6);
+        ctx.roundRect(rx, ry, boxWidth, boxHeight, 8);
         ctx.fill();
         ctx.stroke();
 
@@ -235,7 +235,7 @@ export const FunnelCanvas: React.FC<FunnelCanvasProps> = ({
         ctx.font = "bold 10px 'JetBrains Mono', monospace";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(node.label, nx, isTerm ? ny - 4 : ny - 8);
+        ctx.fillText(node.label, nx, isTerm ? ny - 5 : ny - 9);
 
         // Throughput count & explicit unit
         if (node.count !== undefined) {
@@ -248,7 +248,7 @@ export const FunnelCanvas: React.FC<FunnelCanvasProps> = ({
           if (!isTerm && node.unit) {
             ctx.fillStyle = "#94A3B8";
             ctx.font = "8px 'JetBrains Mono', monospace";
-            ctx.fillText(node.unit, nx, ny + 14);
+            ctx.fillText(node.unit, nx, ny + 15);
           }
         } else if (!isTerm) {
           ctx.fillStyle = "#64748B";
@@ -279,24 +279,34 @@ export const FunnelCanvas: React.FC<FunnelCanvasProps> = ({
     <div
       ref={containerRef}
       className={cn(
-        "relative w-full rounded-xl border border-twin-border bg-[#080B12] overflow-hidden shadow-2xl",
+        "relative w-full rounded-2xl border border-twin-border/90 bg-[#070A11] overflow-hidden shadow-2xl",
         className
       )}
     >
       <canvas ref={canvasRef} className="block w-full" style={{ height: `${height}px` }} />
 
-      {/* Overlay Status Badge */}
-      <div className="absolute top-3 left-3 flex items-center gap-2">
-        <div className="px-2 py-0.5 rounded text-[10px] font-mono border border-twin-border bg-twin-card/90 backdrop-blur-md text-twin-slate">
-          ENGINE: <span className="text-twin-cyan font-bold">{isSimulating ? "RUNNING SIMULATION..." : "DISCRETE-EVENT ENGINE"}</span>
+      {/* Overlay Engine Status Badge */}
+      <div className="absolute top-4 left-4 flex items-center gap-2">
+        <div className="px-3 py-1 rounded-full text-[11px] font-mono border border-twin-border bg-twin-card/90 backdrop-blur-md text-twin-slate flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-twin-cyan animate-pulse" />
+          <span>ENGINE:</span>
+          <span className="text-twin-cyan font-bold">
+            {isSimulating ? "SIMULATING DISCRETE-EVENT FUNNEL..." : "DETERMINISTIC SIMULATION CORE"}
+          </span>
         </div>
       </div>
 
       {/* Funnel Stage Distinction Legend */}
-      <div className="absolute top-3 right-3 hidden md:flex items-center gap-2">
-        <div className="px-2 py-0.5 rounded text-[10px] font-mono border border-twin-border/80 bg-twin-card/90 backdrop-blur-md text-twin-slate">
+      <div className="absolute top-4 right-4 hidden md:flex items-center gap-2">
+        <div className="px-3 py-1 rounded-full text-[10px] font-mono border border-twin-border/80 bg-twin-card/90 backdrop-blur-md text-twin-slate">
           Stages 1–3: <span className="text-twin-white font-medium">Customer Agents</span> | Stages 4–6: <span className="text-twin-cyan font-medium">Payment Attempts (with retries)</span>
         </div>
+      </div>
+
+      {/* Bottom Explanatory Strip */}
+      <div className="absolute bottom-3 left-4 right-4 hidden sm:flex items-center justify-between text-[10px] font-mono text-twin-slate/70 px-3 py-1 rounded bg-[#0A0E1A]/80 border border-twin-border/40">
+        <span>AGENTS ≠ ATTEMPTS: Multi-attempt retries expand throughput at method & gateway stages.</span>
+        <span className="text-twin-cyan">Markov Chain Funnel Simulator</span>
       </div>
     </div>
   );

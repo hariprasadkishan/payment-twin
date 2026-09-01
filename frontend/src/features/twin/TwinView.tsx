@@ -5,8 +5,9 @@ import { useAppStore } from "@/store/useAppStore";
 import { AgentSimulationResult } from "@/types/simulation";
 import { FunnelCanvas } from "@/components/domain/FunnelCanvas";
 import { KPIMetricCard } from "@/components/domain/KPIMetricCard";
-import { ProvenanceTag } from "@/components/domain/ProvenanceTag";
 import { ConfidenceGrade } from "@/components/domain/ConfidenceGrade";
+import { LoopAnimation } from "@/components/ui/LoopAnimation";
+import { TextRoll } from "@/components/ui/TextRoll";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -19,7 +20,10 @@ import {
   PlayCircle, 
   Activity, 
   ShieldAlert, 
-  X
+  X,
+  Sparkles,
+  Sliders,
+  Cpu
 } from "lucide-react";
 
 export const TwinView: React.FC = () => {
@@ -56,6 +60,8 @@ export const TwinView: React.FC = () => {
   } = useRunMonteCarlo();
 
   const isSimulating = isSimulatingSingle || isSimulatingMonteCarlo;
+  const isBenchmark = dnaStatus?.provenance_type === "SYNTHETIC_BENCHMARK_DATA";
+  const sampleCount = dnaStatus?.available_sample_count ?? 0;
 
   const handleRun = () => {
     if (simMode === "single") {
@@ -74,102 +80,122 @@ export const TwinView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in-50 duration-200">
-      {/* Header & Meta */}
-      <div className="p-6 rounded-xl glass-panel border border-twin-border flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <PlayCircle className="w-5 h-5 text-twin-cyan" />
-            <h2 className="text-base font-display font-bold text-twin-white tracking-tight">
-              Payment Twin Funnel Simulator
-            </h2>
-            <Badge variant="cyan" size="sm">DISCRETE-EVENT ENGINE</Badge>
+    <div className="space-y-10 animate-in fade-in-50 duration-300 max-w-7xl mx-auto pb-12">
+      {/* ========================================================================= */}
+      {/* 1. EDITORIAL HEADER & PROVENANCE                                          */}
+      {/* ========================================================================= */}
+      <section className="space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-twin-border/60 pb-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-xs font-mono text-twin-cyan uppercase tracking-wider font-semibold">
+              <Cpu className="w-4 h-4" />
+              <span>PAYMENT TWIN / SIMULATION LAB</span>
+            </div>
+            <h1 className="text-2xl md:text-4xl font-display font-extrabold text-twin-white tracking-tight">
+              SIMULATE THE PAYMENT JOURNEY.
+            </h1>
+            <p className="text-xs md:text-sm text-twin-slate max-w-2xl leading-relaxed">
+              Payment Twin synthesizes autonomous Customer Agents from empirical Behavioral DNA, executing stochastic checkout journeys through the 6-stage funnel to project conversion economics, retry dynamics, and terminal decline bottlenecks.
+            </p>
           </div>
-          <p className="text-xs text-twin-slate">
-            Simulates how synthetic Customer Agents calibrated to Behavioral DNA traverse the merchant payment funnel.
-          </p>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {dnaStatus && (
-            <ConfidenceGrade
-              grade={dnaStatus.confidence_grade as any}
-              sampleSize={dnaStatus.available_sample_count}
-            />
-          )}
-          <ProvenanceTag provenance={dnaStatus?.provenance_type as any || "UNAVAILABLE"} />
-        </div>
-      </div>
-
-      {/* Guardian Context Handoff Banner (if arrived from Guardian) */}
-      {activeTwinHandoff && (
-        <div className="p-4 rounded-xl border border-twin-warning/40 bg-twin-warning/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in-50">
-          <div className="flex items-center gap-3">
-            <ShieldAlert className="w-5 h-5 text-twin-warning flex-shrink-0" />
-            <div className="space-y-0.5 text-xs font-mono">
-              <span className="font-bold text-twin-white uppercase">
-                GUARDIAN CONTEXT LOADED: {activeTwinHandoff.anomaly_type.replace(/_/g, " ")}
+          <div className="flex flex-wrap items-center gap-2">
+            {dnaStatus && (
+              <ConfidenceGrade
+                grade={dnaStatus.confidence_grade as any}
+                sampleSize={dnaStatus.available_sample_count}
+              />
+            )}
+            {isBenchmark ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono border border-twin-warning/30 bg-twin-warning/10 text-twin-warning font-semibold">
+                <Sparkles className="w-3.5 h-3.5" />
+                SYNTHETIC BENCHMARK · {sampleCount.toLocaleString()} RECORDS
               </span>
-              <p className="text-twin-slate text-[11px]">
-                Target: <strong>{activeTwinHandoff.target_entity.toUpperCase()}</strong> | 
-                Shift: <strong className="text-twin-danger">{(activeTwinHandoff.delta * 100).toFixed(1)}% Δ</strong> | 
-                Est. Revenue at Risk: <strong className="text-twin-warning">₹{activeTwinHandoff.estimated_revenue_at_risk_inr.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</strong>
+            ) : (
+              <Badge variant="cyan" size="md">
+                OBSERVED RAZORPAY DATA
+              </Badge>
+            )}
+          </div>
+        </div>
+
+        {/* Guardian Context Handoff Banner (if arrived from Guardian) */}
+        {activeTwinHandoff && (
+          <div className="p-4 rounded-xl border border-twin-warning/40 bg-twin-warning/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in-50">
+            <div className="flex items-center gap-3">
+              <ShieldAlert className="w-5 h-5 text-twin-warning flex-shrink-0" />
+              <div className="space-y-0.5 text-xs font-mono">
+                <span className="font-bold text-twin-white uppercase">
+                  GUARDIAN CONTEXT LOADED: {activeTwinHandoff.anomaly_type.replace(/_/g, " ")}
+                </span>
+                <p className="text-twin-slate text-[11px]">
+                  Target: <strong>{activeTwinHandoff.target_entity.toUpperCase()}</strong> | 
+                  Shift: <strong className="text-twin-danger">{(activeTwinHandoff.delta * 100).toFixed(1)}% Δ</strong> | 
+                  Est. Revenue at Risk: <strong className="text-twin-warning">₹{activeTwinHandoff.estimated_revenue_at_risk_inr.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</strong>
+                </p>
+              </div>
+            </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveTwinHandoff(null)}
+              className="text-twin-slate hover:text-twin-white"
+            >
+              <X className="w-4 h-4" />
+              Dismiss
+            </Button>
+          </div>
+        )}
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 2. COMPACT EXPERIMENT CONTROL DECK                                        */}
+      {/* ========================================================================= */}
+      <section className="p-6 rounded-2xl border border-twin-border bg-gradient-to-b from-[#0C1220] via-[#090D17] to-[#070A11] space-y-6 shadow-xl">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-twin-border/60 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-twin-cyan/10 border border-twin-cyan/20 text-twin-cyan">
+              <Sliders className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-twin-white">
+                <TextRoll>Experiment Control Deck</TextRoll>
+              </h3>
+              <p className="text-[11px] text-twin-slate">
+                Configure population sampling, master seed for Common Random Numbers, and execution mode.
               </p>
             </div>
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setActiveTwinHandoff(null)}
-            className="text-twin-slate hover:text-twin-white"
-          >
-            <X className="w-4 h-4" />
-            Dismiss
-          </Button>
-        </div>
-      )}
-
-      {/* Simulation Control Bar */}
-      <Card variant="primary" className="p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-twin-border/60 pb-4">
           <div className="flex items-center gap-3">
             <Tabs value={simMode} onValueChange={(val) => setSimMode(val as any)}>
               <TabsList>
-                <TabsTrigger value="single">Single Run</TabsTrigger>
+                <TabsTrigger value="single">Single Deterministic Run</TabsTrigger>
                 <TabsTrigger value="monte_carlo">Monte Carlo Sweep</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
-
-          <Button
-            variant="primary"
-            size="md"
-            isLoading={isSimulating}
-            disabled={!dnaStatus?.profiling_available}
-            onClick={handleRun}
-          >
-            <PlayCircle className="w-4 h-4" />
-            {simMode === "single" ? "Run Simulation" : `Run Monte Carlo (${monteCarloRuns} Runs)`}
-          </Button>
         </div>
 
         {/* Sliders and Configuration Inputs */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <Slider
-            label="Population Size"
-            value={populationSize}
-            onChange={setPopulationSize}
-            min={100}
-            max={5000}
-            step={100}
-            unit=" agents"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-end">
+          <div className="sm:col-span-5">
+            <Slider
+              label="Population Size"
+              value={populationSize}
+              onChange={setPopulationSize}
+              min={100}
+              max={5000}
+              step={100}
+              unit=" agents"
+            />
+          </div>
 
-          <div className="space-y-2">
+          <div className="sm:col-span-3 space-y-2">
             <div className="flex justify-between text-xs">
-              <span className="text-twin-slate font-medium">Random Seed (Reproducibility)</span>
-              <span className="font-mono text-twin-cyan">{randomSeed}</span>
+              <span className="text-twin-slate font-medium">Random Seed (CRN)</span>
+              <span className="font-mono text-twin-cyan font-bold">{randomSeed}</span>
             </div>
             <input
               type="number"
@@ -179,19 +205,46 @@ export const TwinView: React.FC = () => {
             />
           </div>
 
-          {simMode === "monte_carlo" && (
-            <Slider
-              label="Monte Carlo Runs"
-              value={monteCarloRuns}
-              onChange={setMonteCarloRuns}
-              min={5}
-              max={50}
-              step={5}
-              unit=" sweeps"
-            />
+          {simMode === "monte_carlo" ? (
+            <div className="sm:col-span-2">
+              <Slider
+                label="Monte Carlo Runs"
+                value={monteCarloRuns}
+                onChange={setMonteCarloRuns}
+                min={5}
+                max={50}
+                step={5}
+                unit=" sweeps"
+              />
+            </div>
+          ) : (
+            <div className="sm:col-span-2 text-xs font-mono p-3 rounded-lg bg-twin-card/40 border border-twin-border/60">
+              <span className="text-[10px] text-twin-slate block">Simulation Method:</span>
+              <span className="text-twin-cyan font-semibold">100% Deterministic</span>
+            </div>
           )}
+
+          <div className="sm:col-span-2">
+            <Button
+              variant="primary"
+              size="md"
+              isLoading={isSimulating}
+              disabled={!dnaStatus?.profiling_available}
+              onClick={handleRun}
+              className="w-full gap-2 font-display tracking-wide font-bold"
+            >
+              <PlayCircle className="w-4 h-4" />
+              {isSimulating ? (
+                "RUNNING..."
+              ) : simMode === "single" ? (
+                "RUN SIMULATION →"
+              ) : (
+                `RUN SWEEP (${monteCarloRuns}) →`
+              )}
+            </Button>
+          </div>
         </div>
-      </Card>
+      </section>
 
       {/* Error Alert */}
       {(isSingleError || isMonteCarloError) && (
@@ -201,39 +254,63 @@ export const TwinView: React.FC = () => {
         />
       )}
 
-      {/* Hero Visualization: Funnel Canvas Engine */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-mono font-semibold text-twin-slate uppercase tracking-wider flex items-center gap-2">
-            <Activity className="w-4 h-4 text-twin-cyan" />
-            Synthetic Customer Funnel Progression
-          </h3>
-          <span className="text-[11px] font-mono text-twin-slate">
-            {singleResult ? `PROCESSED ${singleResult.population_size} AGENTS` : "STANDBY"}
-          </span>
+      {/* ========================================================================= */}
+      {/* 3. HERO CENTERPIECE: 2D FUNNEL SIMULATOR CANVAS                           */}
+      {/* ========================================================================= */}
+      <section className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="space-y-0.5">
+            <h2 className="text-xs font-mono font-bold text-twin-slate uppercase tracking-wider flex items-center gap-2">
+              <Activity className="w-4 h-4 text-twin-cyan" />
+              Synthetic Customer Funnel Progression
+            </h2>
+            <p className="text-[11px] text-twin-slate">
+              Visualizes stochastic customer agent traversal from Cart to Gateway and Terminal Outcomes.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 text-[11px] font-mono">
+            {isSimulating && (
+              <LoopAnimation status="active" label="STOCHASTIC PARTICLES ACTIVE" />
+            )}
+            <span className="text-twin-slate">
+              {singleResult ? `PROCESSED ${singleResult.population_size.toLocaleString()} AGENTS` : "AWAITING RUN"}
+            </span>
+          </div>
         </div>
 
         <FunnelCanvas
           simulationResult={singleResult}
           isSimulating={isSimulating}
-          height={380}
+          height={420}
         />
-      </div>
+      </section>
 
-      {/* Single Run Executive KPI Results */}
+      {/* ========================================================================= */}
+      {/* 4. LIVE SIMULATION RESULT STRIP & BEFORE/AFTER EXPERIMENTAL FEEL           */}
+      {/* ========================================================================= */}
       {singleResult && singleResult.kpis && simMode === "single" && (
-        <div className="space-y-6 animate-in fade-in-50 duration-200">
-          <div className="flex items-center justify-between border-b border-twin-border/60 pb-2">
-            <h3 className="text-xs font-mono font-bold text-twin-cyan uppercase tracking-wider">
-              Executive Simulation Projections (Synthetic Output)
-            </h3>
+        <section className="space-y-8 animate-in fade-in-50 duration-300">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-twin-border/60 pb-3">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono font-bold text-twin-cyan uppercase tracking-wider">
+                  Executive Simulation Projections (Synthetic Output)
+                </span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-twin-cyan/10 border border-twin-cyan/25 text-twin-cyan">
+                  SIMULATED OUTCOME vs CALIBRATED INPUT
+                </span>
+              </div>
+              <p className="text-[11px] text-twin-slate">
+                Forward projections based on {singleResult.population_size.toLocaleString()} autonomous customer agents. Not live historical Razorpay metrics.
+              </p>
+            </div>
             <span className="text-[10px] font-mono text-twin-slate">
-              DURATION: {singleResult.kpis.execution_duration_ms.toFixed(1)}ms
+              EXECUTION DURATION: {singleResult.kpis.execution_duration_ms.toFixed(1)}ms
             </span>
           </div>
 
-          {/* KPI Strip */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* 5-Column Executive KPI Strip */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <KPIMetricCard
               title="Capture Conversion Rate"
               value={singleResult.kpis.conversion_rate_percent}
@@ -262,10 +339,59 @@ export const TwinView: React.FC = () => {
               decimals={1}
               tooltipText="Orders where payment attempts were made but terminally rejected due to gateway decline or exhausted retries."
             />
+            <KPIMetricCard
+              title="Avg Attempts / Success"
+              value={singleResult.kpis.average_attempts_per_success}
+              unit=" attempts"
+              decimals={2}
+              tooltipText="Average payment attempts required to achieve a successful capture."
+            />
           </div>
 
-          {/* Accessible Table: Method Breakdown */}
+          {/* ========================================================================= */}
+          {/* 5. FUNNEL OUTCOME BREAKDOWN & RETRY ANALYSIS                               */}
+          {/* ========================================================================= */}
+          <div className="p-5 rounded-xl border border-twin-border/80 bg-[#0B0F19]/90 space-y-4">
+            <div className="flex items-center justify-between border-b border-twin-border/50 pb-3">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-twin-white">
+                Funnel Conversion Progression & Outcome Accounting
+              </span>
+              <span className="text-[10px] font-mono text-twin-slate">
+                STRICT GMV & POPULATION CONSERVATION
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+              <div className="p-3 rounded-lg bg-twin-card/40 border border-twin-border space-y-1">
+                <span className="text-twin-slate text-[10px]">01. Initiated Population:</span>
+                <div className="text-base font-bold text-twin-white">
+                  {singleResult.kpis.total_agents.toLocaleString()} <span className="text-[10px] font-normal text-twin-slate">agents</span>
+                </div>
+              </div>
+              <div className="p-3 rounded-lg bg-twin-card/40 border border-twin-border space-y-1">
+                <span className="text-twin-slate text-[10px]">02. Total Payment Attempts:</span>
+                <div className="text-base font-bold text-twin-cyan">
+                  {singleResult.kpis.total_payment_attempts.toLocaleString()} <span className="text-[10px] font-normal text-twin-slate">attempts</span>
+                </div>
+              </div>
+              <div className="p-3 rounded-lg bg-twin-card/40 border border-twin-border space-y-1">
+                <span className="text-twin-slate text-[10px]">03. Successful Captures:</span>
+                <div className="text-base font-bold text-twin-success">
+                  {singleResult.kpis.successful_transactions.toLocaleString()} <span className="text-[10px] font-normal text-twin-slate">orders</span>
+                </div>
+              </div>
+              <div className="p-3 rounded-lg bg-twin-card/40 border border-twin-border space-y-1">
+                <span className="text-twin-slate text-[10px]">04. Terminal Declines / Drops:</span>
+                <div className="text-base font-bold text-twin-danger">
+                  {(singleResult.kpis.failed_transactions + singleResult.kpis.abandoned_transactions).toLocaleString()} <span className="text-[10px] font-normal text-twin-slate">losses</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Breakdown Tables */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Table: Payment Instrument Performance */}
             <Card variant="primary">
               <CardHeader>
                 <CardTitle className="text-sm">Instrument Performance Breakdown</CardTitle>
@@ -330,9 +456,14 @@ export const TwinView: React.FC = () => {
           {/* Sampled Agent Traces Preview */}
           {singleResult.preview_agent_traces && singleResult.preview_agent_traces.length > 0 && (
             <div className="space-y-3">
-              <h3 className="text-xs font-mono font-semibold text-twin-slate uppercase tracking-wider">
-                Simulated Agent Lifecycle Traces (Click to Inspect Events)
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-mono font-semibold text-twin-slate uppercase tracking-wider">
+                  Simulated Agent Lifecycle Traces (Click to Inspect Events)
+                </h3>
+                <span className="text-[11px] font-mono text-twin-slate">
+                  {singleResult.preview_agent_traces.length} SAMPLE AGENTS RETURNED
+                </span>
+              </div>
 
               <Table>
                 <TableHeader>
@@ -382,16 +513,23 @@ export const TwinView: React.FC = () => {
               </Table>
             </div>
           )}
-        </div>
+        </section>
       )}
 
-      {/* Monte Carlo Results Display */}
+      {/* ========================================================================= */}
+      {/* 6. MONTE CARLO UNCERTAINTY SWEEP RESULTS                                  */}
+      {/* ========================================================================= */}
       {monteCarloResult && simMode === "monte_carlo" && (
-        <div className="space-y-6 animate-in fade-in-50 duration-200">
-          <div className="flex items-center justify-between border-b border-twin-border/60 pb-2">
-            <h3 className="text-xs font-mono font-bold text-twin-cyan uppercase tracking-wider">
-              Monte Carlo Uncertainty Analysis ({monteCarloResult.total_runs} Independent Sweeps)
-            </h3>
+        <section className="space-y-6 animate-in fade-in-50 duration-300">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-twin-border/60 pb-3">
+            <div className="space-y-0.5">
+              <h3 className="text-xs font-mono font-bold text-twin-cyan uppercase tracking-wider">
+                Monte Carlo Uncertainty Analysis ({monteCarloResult.total_runs} Independent Sweeps)
+              </h3>
+              <p className="text-[11px] text-twin-slate">
+                Aggregates {monteCarloResult.total_runs} stochastic simulation runs to estimate outcome confidence intervals and standard errors.
+              </p>
+            </div>
             <span className="text-[10px] font-mono text-twin-slate">
               TOTAL DURATION: {monteCarloResult.execution_duration_ms.toFixed(1)}ms
             </span>
@@ -404,7 +542,7 @@ export const TwinView: React.FC = () => {
                   {metricKey.replace(/_/g, " ")}
                 </span>
                 
-                <div className="p-3 rounded bg-twin-card/60 border border-twin-border space-y-1.5">
+                <div className="p-3 rounded-lg bg-twin-card/60 border border-twin-border space-y-2">
                   <div className="flex justify-between">
                     <span className="text-twin-slate">Mean:</span>
                     <span className="text-twin-cyan font-bold">
@@ -412,9 +550,9 @@ export const TwinView: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-twin-slate">95% CI:</span>
+                    <span className="text-twin-slate">95% Confidence Interval:</span>
                     <span className="text-twin-white font-semibold">
-                      [{dist.ci_95[0].toFixed(1)} - {dist.ci_95[1].toFixed(1)}]
+                      [{dist.ci_95[0].toFixed(1)} – {dist.ci_95[1].toFixed(1)}]
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -422,17 +560,23 @@ export const TwinView: React.FC = () => {
                     <span className="text-twin-white">{dist.p50.toFixed(1)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-twin-slate">Std Dev:</span>
+                    <span className="text-twin-slate">5th / 95th Percentile:</span>
+                    <span className="text-twin-slate">[{dist.p5.toFixed(1)}, {dist.p95.toFixed(1)}]</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-twin-slate">Standard Deviation:</span>
                     <span className="text-twin-slate">{dist.std_dev.toFixed(2)}</span>
                   </div>
                 </div>
               </Card>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Agent Trace Drawer */}
+      {/* ========================================================================= */}
+      {/* 7. AGENT TELEMETRY INSPECTOR DRAWER                                       */}
+      {/* ========================================================================= */}
       <Drawer
         isOpen={!!selectedAgentTrace}
         onClose={() => setSelectedAgentTrace(null)}
