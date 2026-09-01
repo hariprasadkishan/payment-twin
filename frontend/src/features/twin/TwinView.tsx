@@ -235,32 +235,32 @@ export const TwinView: React.FC = () => {
           {/* KPI Strip */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <KPIMetricCard
-              title="Conversion Rate"
+              title="Capture Conversion Rate"
               value={singleResult.kpis.conversion_rate_percent}
               unit="%"
               decimals={1}
-              tooltipText="Projected percentage of synthetic agents successfully capturing payments."
+              tooltipText="Captured orders as a percentage of total customer agent population."
             />
             <KPIMetricCard
-              title="Captured Volume"
+              title="Captured Volume (GMV)"
               value={singleResult.kpis.captured_volume_inr}
               unit="INR"
               decimals={0}
-              tooltipText="Projected gross captured order volume in INR."
+              tooltipText="Gross merchandise value of successfully captured orders in INR."
             />
             <KPIMetricCard
               title="Net Merchant Revenue"
               value={singleResult.kpis.net_merchant_revenue_inr}
               unit="INR"
               decimals={0}
-              tooltipText="Projected net revenue after deducting MDR gateway processing fees and taxes."
+              tooltipText="Net settled revenue after deducting MDR gateway processing fees and taxes."
             />
             <KPIMetricCard
               title="Terminal Failure Rate"
               value={singleResult.kpis.failure_rate_percent}
               unit="%"
               decimals={1}
-              tooltipText="Projected terminal checkout declines."
+              tooltipText="Orders where payment attempts were made but terminally rejected due to gateway decline or exhausted retries."
             />
           </div>
 

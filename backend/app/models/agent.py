@@ -24,6 +24,7 @@ class FunnelState(str, Enum):
     RETRY_EVALUATION = "RETRY_EVALUATION"
     ABANDONED = "ABANDONED"
     TERMINATED_SUCCESS = "TERMINATED_SUCCESS"
+    TERMINATED_FAILED = "TERMINATED_FAILED"
     TERMINATED_ABANDONED = "TERMINATED_ABANDONED"
 
 
@@ -57,17 +58,20 @@ VALID_STATE_TRANSITIONS: Dict[FunnelState, Set[FunnelState]] = {
     FunnelState.FAILED: {
         FunnelState.RETRY_EVALUATION,
         FunnelState.ABANDONED,
+        FunnelState.TERMINATED_FAILED,
     },
     FunnelState.RETRY_EVALUATION: {
         FunnelState.METHOD_SELECTED,  # Method switched or reselected
         FunnelState.AUTHENTICATING,   # Retrying authentication directly
         FunnelState.PROCESSING,       # Retrying gateway processing
         FunnelState.ABANDONED,        # Exhausted retries or gave up
+        FunnelState.TERMINATED_FAILED,
     },
     FunnelState.ABANDONED: {
         FunnelState.TERMINATED_ABANDONED,
     },
     FunnelState.TERMINATED_SUCCESS: set(),  # Terminal state
+    FunnelState.TERMINATED_FAILED: set(),   # Terminal state
     FunnelState.TERMINATED_ABANDONED: set(),  # Terminal state
 }
 

@@ -375,9 +375,10 @@ def test_max_retries_and_abandonment(sample_calibrated_dna: BehavioralDNAProfile
     result = engine.simulate_agent(agent=agent, environment=env, simulation_id="test_sim_4")
 
     assert result.is_successful is False
-    assert result.is_abandoned is True
+    assert result.is_abandoned is False
     assert result.total_attempts <= 2  # Cannot exceed initial attempt + 1 retry
-    assert result.final_state == FunnelState.TERMINATED_ABANDONED
+    assert result.final_state == FunnelState.TERMINATED_FAILED
+    assert result.terminal_reason == "MAX_RETRIES_EXCEEDED"
 
 
 def test_event_ordering_and_monotonically_increasing_timestamps(

@@ -9,6 +9,8 @@ export interface EmptyStateProps {
   description: string;
   actionLabel?: string;
   onAction?: () => void;
+  secondaryActionLabel?: string;
+  onSecondaryAction?: () => void;
   className?: string;
   statusBadge?: string;
 }
@@ -19,6 +21,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   description,
   actionLabel,
   onAction,
+  secondaryActionLabel,
+  onSecondaryAction,
   className,
   statusBadge = "Awaiting Data",
 }) => {
@@ -45,11 +49,18 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         </p>
       </div>
 
-      {actionLabel && onAction && (
-        <Button variant="secondary" size="sm" onClick={onAction}>
-          {actionLabel}
-        </Button>
-      )}
+      <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+        {actionLabel && onAction && (
+          <Button variant="primary" size="sm" onClick={onAction}>
+            {actionLabel}
+          </Button>
+        )}
+        {secondaryActionLabel && onSecondaryAction && (
+          <Button variant="secondary" size="sm" onClick={onSecondaryAction}>
+            {secondaryActionLabel}
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

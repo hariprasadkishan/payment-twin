@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
-import { useDatasetSummary, useIngestPayments } from "@/hooks/useDatasets";
+import { useDatasetSummary, useIngestPayments, useLoadBenchmark } from "@/hooks/useDatasets";
 import { useDNAStatus } from "@/hooks/useDNA";
 import { useGuardianStatus } from "@/hooks/useGuardian";
 import { useAppStore } from "@/store/useAppStore";
@@ -14,7 +14,8 @@ import {
   RefreshCw, 
   Layers,
   PlayCircle,
-  ShieldCheck 
+  ShieldCheck,
+  Sparkles 
 } from "lucide-react";
 
 export const OverviewView: React.FC = () => {
@@ -31,21 +32,22 @@ export const OverviewView: React.FC = () => {
   const { data: dnaStatus } = useDNAStatus();
   const { data: guardianStatus } = useGuardianStatus();
 
-  const {
-    mutate: triggerIngest,
-    isPending: isIngesting,
-  } = useIngestPayments();
+  const { mutate: triggerIngest, isPending: isIngesting } = useIngestPayments();
+  const { mutate: loadBenchmark, isPending: isBenchmarkLoading } = useLoadBenchmark();
 
   // Synchronize store provenance and health when data loads
   React.useEffect(() => {
-    if (summary && summary.total_records > 0) {
+    if (dnaStatus && dnaStatus.profiling_available) {
+      setCurrentProvenance(dnaStatus.provenance_type as any);
+      setSystemHealth("healthy");
+    } else if (summary && summary.total_records > 0) {
       setCurrentProvenance("OBSERVED_RAZORPAY_DATA");
       setSystemHealth("healthy");
     } else {
       setCurrentProvenance("UNAVAILABLE");
       setSystemHealth("unavailable");
     }
-  }, [summary, setCurrentProvenance, setSystemHealth]);
+  }, [dnaStatus, summary, setCurrentProvenance, setSystemHealth]);
 
   const hasObservedData = summary && summary.total_records > 0;
 
@@ -228,10 +230,19 @@ export const OverviewView: React.FC = () => {
                   onClick={() => triggerIngest({ count: 100 })}
                 >
                   <RefreshCw className="w-4 h-4" />
-                  Sync Test Payments Now
+                  Sync Test Payments
                 </Button>
-                <Button variant="secondary" size="sm" onClick={() => setActivePage("settings")}>
-                  Manage Datasets
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  isLoading={isBenchmarkLoading}
+                  onClick={() => loadBenchmark()}
+                >
+                  <Sparkles className="w-4 h-4 text-twin-warning" />
+                  Load Synthetic Benchmark (650 Records)
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setActivePage("settings")}>
+                  Manage Datasets →
                 </Button>
               </div>
             </Card>

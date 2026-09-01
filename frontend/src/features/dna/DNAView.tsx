@@ -1,6 +1,6 @@
 import React from "react";
 import { useDNAProfile, useDNAStatus } from "@/hooks/useDNA";
-import { useIngestPayments } from "@/hooks/useDatasets";
+import { useIngestPayments, useLoadBenchmark } from "@/hooks/useDatasets";
 import { ProvenanceTag } from "@/components/domain/ProvenanceTag";
 import { ConfidenceGrade } from "@/components/domain/ConfidenceGrade";
 import { DistributionBar, MethodShareItem } from "@/components/domain/DistributionBar";
@@ -21,6 +21,7 @@ export const DNAView: React.FC = () => {
   const { isLoading: isStatusLoading } = useDNAStatus();
   const { data: profile, isLoading: isProfileLoading, isError, error, refetch } = useDNAProfile();
   const { mutate: triggerIngest, isPending: isIngesting } = useIngestPayments();
+  const { mutate: loadBenchmark, isPending: isBenchmarkLoading } = useLoadBenchmark();
 
   const isLoading = isStatusLoading || isProfileLoading;
 
@@ -59,6 +60,8 @@ export const DNAView: React.FC = () => {
           statusBadge="DNA UNAVAILABLE"
           actionLabel={isIngesting ? "Syncing Test Payments..." : "Sync Test Payments from Razorpay"}
           onAction={() => triggerIngest({ count: 100 })}
+          secondaryActionLabel={isBenchmarkLoading ? "Loading Benchmark..." : "Load Synthetic Benchmark (650 Records)"}
+          onSecondaryAction={() => loadBenchmark()}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

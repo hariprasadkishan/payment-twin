@@ -351,29 +351,23 @@ class PaymentTwinEngine:
 
             return next_attempt, next_method, switched_flag
 
-        # Retries Exhausted or Agent Gave Up
+        # Retries Exhausted or Agent Gave Up (Terminal Payment Failure)
         terminal_cause = "MAX_RETRIES_EXCEEDED" if attempt > max_retries else "GAVE_UP_AFTER_DECLINE"
-        action_name = "RETRIES_EXHAUSTED" if attempt > max_retries else "ABANDON_AFTER_FAIL"
+        action_name = "RETRIES_EXHAUSTED" if attempt > max_retries else "TERMINAL_DECLINE"
 
         emit_event(
             FunnelState.RETRY_EVALUATION,
-            FunnelState.ABANDONED,
+            FunnelState.TERMINATED_FAILED,
             action_name,
             {"terminal_reason": terminal_cause, "attempt": attempt},
-        )
-        emit_event(
-            FunnelState.ABANDONED,
-            FunnelState.TERMINATED_ABANDONED,
-            "SESSION_CLOSED",
-            {"terminal_reason": terminal_cause},
         )
 
         return AgentSimulationResult(
             agent_id=agent.agent_id,
             archetype=agent.archetype,
             is_successful=False,
-            is_abandoned=True,
-            final_state=FunnelState.TERMINATED_ABANDONED,
+            is_abandoned=False,
+            final_state=FunnelState.TERMINATED_FAILED,
             total_attempts=attempt,
             final_method=active_method,
             method_switched=method_switched,
