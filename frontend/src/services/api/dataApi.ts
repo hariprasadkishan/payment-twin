@@ -41,4 +41,22 @@ export const dataApi = {
     const query = filename ? `?filename=${encodeURIComponent(filename)}` : "";
     return apiClient<DatasetSummaryResponse>(`/data/datasets/summary${query}`);
   },
+
+  /**
+   * Seeds canonical synthetic benchmark dataset for demonstration.
+   */
+  loadBenchmarkDataset: async (): Promise<DatasetListResponse> => {
+    return apiClient<DatasetListResponse>("/data/benchmark/load", {
+      method: "POST",
+    });
+  },
+
+  /**
+   * Clears synthetic benchmark dataset returning to honest empty state.
+   */
+  clearBenchmarkDataset: async (): Promise<DatasetListResponse> => {
+    return apiClient<DatasetListResponse>("/data/benchmark/clear", {
+      method: "DELETE",
+    });
+  },
 };

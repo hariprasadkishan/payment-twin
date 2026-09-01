@@ -103,9 +103,12 @@ class BehavioralDNAProfiler:
 
         grade, score, adequate = self._assess_sample_size(total_samples)
 
+        is_synth = any("benchmark" in f.filename.lower() or "synthetic" in f.filename.lower() for f in files)
+        provenance_type = "SYNTHETIC_BENCHMARK_DATA" if is_synth else "OBSERVED_RAZORPAY_DATA"
+
         status_label = "ready" if adequate else "insufficient_data"
         msg = (
-            f"Behavioral DNA profiling ready with {total_samples} records ({grade})."
+            f"Behavioral DNA profiling ready with {total_samples} records ({grade}) [{'SYNTHETIC BENCHMARK' if is_synth else 'OBSERVED DATA'}]."
             if adequate
             else f"Preliminary DNA profiling possible ({total_samples} records, {grade}). Sample size is limited."
         )
@@ -115,7 +118,7 @@ class BehavioralDNAProfiler:
             profiling_available=True,
             available_sample_count=total_samples,
             confidence_grade=grade,
-            provenance_type="OBSERVED_RAZORPAY_DATA",
+            provenance_type=provenance_type,
             source_files_count=len(files),
             message=msg,
         )
@@ -150,12 +153,14 @@ class BehavioralDNAProfiler:
         elif source_label:
             source_files = [source_label]
 
+        is_synth = is_synthetic or any("benchmark" in f.lower() or "synthetic" in f.lower() for f in source_files)
+
         now_iso = datetime.now(timezone.utc).isoformat()
         total_n = len(records)
 
         # 1. Zero-Data Empty Profile
         if total_n == 0:
-            return self._build_empty_profile(now_iso, source_files, is_synthetic)
+            return self._build_empty_profile(now_iso, source_files, is_synth)
 
         # 2. Extract Timestamps and Timespan
         timestamps = [r.created_at_unix for r in records if r.created_at_unix > 0]
@@ -164,7 +169,7 @@ class BehavioralDNAProfiler:
         timespan_days = round((max_ts - min_ts) / 86400.0, 2) if timestamps else 0.0
 
         # 3. Provenance & Reliability
-        provenance_type = "SYNTHETIC_BENCHMARK_DATA" if is_synthetic else "OBSERVED_RAZORPAY_DATA"
+        provenance_type = "SYNTHETIC_BENCHMARK_DATA" if is_synth else "OBSERVED_RAZORPAY_DATA"
         grade, score, adequate = self._assess_sample_size(total_n)
 
         # Subsegment Reliability Map
@@ -189,7 +194,7 @@ class BehavioralDNAProfiler:
 
         provenance = DataProvenance(
             data_source_type=provenance_type,
-            is_synthetic_benchmark=is_synthetic,
+            is_synthetic_benchmark=is_synth,
             source_datasets=sorted(source_files),
             extracted_at_iso=now_iso,
             total_sample_size=total_n,

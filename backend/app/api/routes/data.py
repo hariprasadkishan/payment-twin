@@ -116,3 +116,54 @@ def get_dataset_summary(
     Generates summary statistics for a specific dataset or across all available datasets.
     """
     return loader.compute_summary(filename=filename)
+
+
+@router.post(
+    "/benchmark/load",
+    response_model=DatasetListResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Load Synthetic Benchmark Dataset",
+    description="Generates and stores an aggregate synthetic benchmark dataset strictly tagged as SYNTHETIC_BENCHMARK_DATA for demonstration purposes.",
+)
+def load_benchmark_dataset(
+    loader: DatasetLoaderService = Depends(get_dataset_loader_service),
+) -> DatasetListResponse:
+    """
+    Seeds canonical synthetic benchmark payment records into data/raw/.
+    """
+    from app.services.benchmark_seeder import BenchmarkDatasetService
+    seeder = BenchmarkDatasetService(loader=loader)
+    seeder.seed_benchmark_file()
+    datasets = loader.list_dataset_files()
+    return DatasetListResponse(
+        status="ok",
+        message="Synthetic benchmark dataset seeded successfully.",
+        total_datasets=len(datasets),
+        datasets=datasets,
+    )
+
+
+@router.delete(
+    "/benchmark/clear",
+    response_model=DatasetListResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Clear Synthetic Benchmark Dataset",
+    description="Removes synthetic benchmark dataset from data/raw/ returning to honest empty state.",
+)
+def clear_benchmark_dataset(
+    loader: DatasetLoaderService = Depends(get_dataset_loader_service),
+) -> DatasetListResponse:
+    """
+    Clears synthetic benchmark file from data/raw/.
+    """
+    from app.services.benchmark_seeder import BenchmarkDatasetService
+    seeder = BenchmarkDatasetService(loader=loader)
+    seeder.clear_benchmark_file()
+    datasets = loader.list_dataset_files()
+    return DatasetListResponse(
+        status="ok" if datasets else "empty",
+        message="Synthetic benchmark dataset cleared." if not datasets else "Benchmark cleared; other datasets remain.",
+        total_datasets=len(datasets),
+        datasets=datasets,
+    )
+

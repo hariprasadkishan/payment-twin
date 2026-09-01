@@ -46,3 +46,34 @@ export function useIngestPayments() {
     },
   });
 }
+
+export function useLoadBenchmark() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => dataApi.loadBenchmarkDataset(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: DATASET_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ["dna"] });
+      queryClient.invalidateQueries({ queryKey: ["guardian"] });
+      queryClient.invalidateQueries({ queryKey: ["simulation"] });
+      queryClient.invalidateQueries({ queryKey: ["agents"] });
+    },
+  });
+}
+
+export function useClearBenchmark() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => dataApi.clearBenchmarkDataset(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: DATASET_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ["dna"] });
+      queryClient.invalidateQueries({ queryKey: ["guardian"] });
+      queryClient.invalidateQueries({ queryKey: ["simulation"] });
+      queryClient.invalidateQueries({ queryKey: ["agents"] });
+    },
+  });
+}
+
