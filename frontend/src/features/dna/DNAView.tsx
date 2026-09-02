@@ -1,20 +1,27 @@
 import React from "react";
 import { useDNAProfile, useDNAStatus } from "@/hooks/useDNA";
 import { useIngestPayments, useLoadBenchmark } from "@/hooks/useDatasets";
+import { useAppStore } from "@/store/useAppStore";
 import { ProvenanceTag } from "@/components/domain/ProvenanceTag";
 import { ConfidenceGrade } from "@/components/domain/ConfidenceGrade";
-import { DistributionBar, MethodShareItem } from "@/components/domain/DistributionBar";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
+import { BehavioralFingerprint } from "./components/BehavioralFingerprint";
+import { DNAInstrumentStrip } from "./components/DNAInstrumentStrip";
+import { PaymentRailPerformance } from "./components/PaymentRailPerformance";
+import { TransactionValueSignature } from "./components/TransactionValueSignature";
+import { FailureSignature } from "./components/FailureSignature";
 import { 
   Dna, 
   Layers, 
   TrendingUp, 
   DollarSign, 
-  AlertOctagon
+  Sparkles,
+  Database,
+  Cpu,
+  Bot
 } from "lucide-react";
 
 export const DNAView: React.FC = () => {
@@ -22,29 +29,30 @@ export const DNAView: React.FC = () => {
   const { data: profile, isLoading: isProfileLoading, isError, error, refetch } = useDNAProfile();
   const { mutate: triggerIngest, isPending: isIngesting } = useIngestPayments();
   const { mutate: loadBenchmark, isPending: isBenchmarkLoading } = useLoadBenchmark();
+  const { setActivePage } = useAppStore();
 
   const isLoading = isStatusLoading || isProfileLoading;
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-20 w-full" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Skeleton className="h-64 w-full" />
-          <Skeleton className="h-64 w-full" />
-        </div>
-        <Skeleton className="h-48 w-full" />
+      <div className="space-y-8 animate-in fade-in-50 duration-200 max-w-7xl mx-auto">
+        <Skeleton className="h-44 w-full rounded-xl" />
+        <Skeleton className="h-28 w-full rounded-xl" />
+        <Skeleton className="h-80 w-full rounded-xl" />
+        <Skeleton className="h-64 w-full rounded-xl" />
       </div>
     );
   }
 
   if (isError) {
     return (
-      <ErrorAlert
-        title="Failed to Load Behavioral DNA Profile"
-        message={(error as Error)?.message || "An unexpected error occurred while communicating with the DNA engine."}
-        onRetry={() => refetch()}
-      />
+      <div className="max-w-7xl mx-auto">
+        <ErrorAlert
+          title="Failed to Load Behavioral DNA Profile"
+          message={(error as Error)?.message || "An unexpected error occurred while communicating with the DNA engine."}
+          onRetry={() => refetch()}
+        />
+      </div>
     );
   }
 
@@ -52,7 +60,7 @@ export const DNAView: React.FC = () => {
 
   if (isProfileEmpty) {
     return (
-      <div className="space-y-8 animate-in fade-in-50 duration-200">
+      <div className="space-y-8 animate-in fade-in-50 duration-200 max-w-7xl mx-auto">
         <EmptyState
           icon={Dna}
           title="No Behavioral DNA Profile Established"
@@ -93,264 +101,167 @@ export const DNAView: React.FC = () => {
     );
   }
 
-  // Method items for distribution bar
-  const methodColors: Record<string, string> = {
-    upi: "#06B6D4",
-    card: "#6366F1",
-    netbanking: "#F59E0B",
-    wallet: "#10B981",
-    emi: "#EC4899",
-  };
-
-  const methodItems: MethodShareItem[] = Object.entries(profile.method_priors.probabilities).map(
-    ([method, prob]) => ({
-      key: method,
-      label: method.toUpperCase(),
-      percentage: prob * 100,
-      color: methodColors[method.toLowerCase()] || "#94A3B8",
-    })
-  );
-
   return (
-    <div className="space-y-8 animate-in fade-in-50 duration-200">
-      {/* DNA Profile Header Meta */}
-      <div className="p-6 rounded-xl glass-panel border border-twin-border flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Dna className="w-5 h-5 text-twin-cyan" />
-            <h2 className="text-base font-display font-bold text-twin-white tracking-tight">
-              Merchant Behavioral DNA Fingerprint
-            </h2>
-            <Badge variant="cyan" size="sm">v{profile.dna_version}</Badge>
+    <div className="space-y-10 animate-in fade-in-50 duration-300 max-w-7xl mx-auto pb-16">
+      {/* ========================================================================= */}
+      {/* 1. HERO / EDITORIAL INTELLIGENCE HEADER + PRIMARY FINGERPRINT VISUAL      */}
+      {/* ========================================================================= */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+        {/* Left Column: Editorial Headline & Meta (7 cols) */}
+        <div className="lg:col-span-7 flex flex-col justify-between space-y-6">
+          <div className="space-y-4">
+            {/* Eyebrow */}
+            <div className="flex items-center gap-2.5">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-twin-cyan/10 border border-twin-cyan/30 text-[10px] font-mono uppercase tracking-widest text-twin-cyan font-bold">
+                <Dna className="w-3.5 h-3.5" />
+                BEHAVIORAL INTELLIGENCE / PROFILE v{profile.dna_version}
+              </span>
+              <span className="text-[10px] font-mono text-twin-slate/70 uppercase tracking-widest">
+                ID: DNA_{profile.provenance.data_source_type.substring(0, 8)}
+              </span>
+            </div>
+
+            {/* Main Headline */}
+            <div className="space-y-1">
+              <h1 className="text-4xl sm:text-5xl font-display font-extrabold text-twin-white tracking-tight leading-[1.08]">
+                THE MERCHANT
+                <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-twin-cyan via-twin-white to-twin-indigo">
+                  PAYMENT FINGERPRINT.
+                </span>
+              </h1>
+            </div>
+
+            {/* Supporting Copy */}
+            <p className="text-sm sm:text-base text-twin-slate font-light leading-relaxed max-w-xl">
+              An empirical behavioral model extracted from{" "}
+              <strong className="text-twin-white font-semibold">
+                {profile.provenance.total_sample_size.toLocaleString()} payment records
+              </strong>
+              . This profile becomes the statistical prior for synthetic Customer Agents and Payment Twin simulations.
+            </p>
           </div>
-          <p className="text-xs text-twin-slate">
-            Empirically extracted from {profile.provenance.total_sample_size.toLocaleString()} observed payment records.
-          </p>
+
+          {/* Live Provenance & Confidence Spec-Bar */}
+          <div className="pt-4 border-t border-twin-border/60 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <ConfidenceGrade
+                grade={profile.reliability.confidence_grade as any}
+                sampleSize={profile.provenance.total_sample_size}
+              />
+              <ProvenanceTag provenance={profile.provenance.data_source_type as any} />
+            </div>
+
+            <div className="text-[11px] font-mono text-twin-slate/80">
+              Timespan: <span className="text-twin-white font-semibold">{profile.temporal_dynamics.timespan_days ? `${profile.temporal_dynamics.timespan_days}d` : "Single Period"}</span>
+            </div>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <ConfidenceGrade
-            grade={profile.reliability.confidence_grade as any}
+        {/* Right Column: Primary Fingerprint Centerpiece (5 cols) */}
+        <div className="lg:col-span-5">
+          <BehavioralFingerprint
+            methodPriors={profile.method_priors.probabilities}
             sampleSize={profile.provenance.total_sample_size}
           />
-          <ProvenanceTag provenance={profile.provenance.data_source_type as any} />
         </div>
-      </div>
+      </section>
 
-      {/* Grid: Method Priors & Success Dynamics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Method Priors Card */}
-        <Card variant="primary">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-twin-cyan" />
-              1. Payment Instrument Priors & Routing
-            </CardTitle>
-            <CardDescription>
-              Marginal selection probabilities P(method = m) and ticket size conditioning
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <DistributionBar items={methodItems} />
+      {/* ========================================================================= */}
+      {/* 2. "WHAT THE DNA KNOWS" 4-DIMENSION BEHAVIORAL INSTRUMENTATION STRIP       */}
+      {/* ========================================================================= */}
+      <DNAInstrumentStrip profile={profile} />
 
-            {/* Amount Conditioned Priors Breakdown */}
-            {profile.method_priors.amount_conditioned_priors && (
-              <div className="space-y-3 pt-2">
-                <span className="text-xs font-mono font-semibold text-twin-slate uppercase tracking-wider">
-                  Amount-Conditioned Selection Probabilities
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono">
-                  {Object.entries(profile.method_priors.amount_conditioned_priors).map(([tier, priors]) => (
-                    <div key={tier} className="p-3 rounded-lg bg-twin-card/50 border border-twin-border space-y-1">
-                      <span className="text-[10px] text-twin-slate uppercase font-bold">
-                        {tier.replace("tier_", "").replace(/_/g, " ")}
-                      </span>
-                      {Object.entries(priors).map(([m, p]) => (
-                        <div key={m} className="flex justify-between text-[11px]">
-                          <span className="text-twin-slate">{m}:</span>
-                          <span className="text-twin-white font-semibold">{(p * 100).toFixed(1)}%</span>
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      {/* ========================================================================= */}
+      {/* 3. PAYMENT RAIL PERFORMANCE                                               */}
+      {/* ========================================================================= */}
+      <PaymentRailPerformance profile={profile} />
 
-        {/* Success Dynamics Card */}
-        <Card variant="primary">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-twin-success" />
-              2. Capture Rates & Wilson 95% Error Bounds
-            </CardTitle>
-            <CardDescription>
-              Empirical capture rates per rail and issuing bank with analytical confidence intervals
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              {Object.entries(profile.success_dynamics.by_method).map(([method, metric]) => (
-                <div key={method} className="p-3 rounded-lg bg-twin-card/50 border border-twin-border flex items-center justify-between text-xs font-mono">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: methodColors[method] || "#94A3B8" }} />
-                    <span className="font-semibold text-twin-white uppercase">{method}</span>
-                    <span className="text-twin-slate text-[10px]">({metric.sample_size} attempts)</span>
-                  </div>
+      {/* ========================================================================= */}
+      {/* 4. TRANSACTION VALUE SIGNATURE                                            */}
+      {/* ========================================================================= */}
+      <TransactionValueSignature profile={profile} />
 
-                  <div className="flex items-center gap-3">
-                    <span className="text-twin-white font-bold">
-                      {(metric.rate * 100).toFixed(1)}%
-                    </span>
-                    {metric.ci_95 && (
-                      <span className="text-[10px] text-twin-slate">
-                        [{(metric.ci_95[0] * 100).toFixed(1)}% - {(metric.ci_95[1] * 100).toFixed(1)}%]
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+      {/* ========================================================================= */}
+      {/* 5. FAILURE SIGNATURE & TRANSITION ASSOCIATIONS                           */}
+      {/* ========================================================================= */}
+      <FailureSignature profile={profile} />
 
-            {/* Issuing Bank Success Breakdown */}
-            {profile.success_dynamics.by_bank && Object.keys(profile.success_dynamics.by_bank).length > 0 && (
-              <div className="pt-2 space-y-2">
-                <span className="text-xs font-mono font-semibold text-twin-slate uppercase tracking-wider">
-                  Issuing Bank Performance
-                </span>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-mono">
-                  {Object.entries(profile.success_dynamics.by_bank).map(([bank, metric]) => (
-                    <div key={bank} className="p-2.5 rounded-lg bg-twin-card/40 border border-twin-border flex justify-between">
-                      <span className="text-twin-slate">{bank}:</span>
-                      <span className="text-twin-white font-semibold">{(metric.rate * 100).toFixed(1)}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Grid: Amount Distribution & Failure Diagnostics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Amount Distribution Card */}
-        <Card variant="primary">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-twin-cyan" />
-              3. Ticket Size Distribution & Quantiles
-            </CardTitle>
-            <CardDescription>
-              Parametric Log-normal fit and empirical percentile markers
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {profile.amount_distribution.summary && (
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 text-xs font-mono text-center">
-                <div className="p-2.5 rounded-lg bg-twin-card/50 border border-twin-border space-y-1">
-                  <span className="text-[10px] text-twin-slate">Mean</span>
-                  <div className="font-bold text-twin-white">₹{profile.amount_distribution.summary.mean.toFixed(0)}</div>
-                </div>
-                <div className="p-2.5 rounded-lg bg-twin-card/50 border border-twin-border space-y-1">
-                  <span className="text-[10px] text-twin-slate">Median</span>
-                  <div className="font-bold text-twin-cyan">₹{profile.amount_distribution.summary.median.toFixed(0)}</div>
-                </div>
-                <div className="p-2.5 rounded-lg bg-twin-card/50 border border-twin-border space-y-1">
-                  <span className="text-[10px] text-twin-slate">Std Dev</span>
-                  <div className="font-bold text-twin-white">₹{profile.amount_distribution.summary.std_dev.toFixed(0)}</div>
-                </div>
-                <div className="p-2.5 rounded-lg bg-twin-card/50 border border-twin-border space-y-1">
-                  <span className="text-[10px] text-twin-slate">IQR</span>
-                  <div className="font-bold text-twin-white">₹{profile.amount_distribution.summary.iqr.toFixed(0)}</div>
-                </div>
-                <div className="p-2.5 rounded-lg bg-twin-card/50 border border-twin-border space-y-1">
-                  <span className="text-[10px] text-twin-slate">Skewness</span>
-                  <div className="font-bold text-twin-white">{profile.amount_distribution.summary.skewness.toFixed(2)}</div>
-                </div>
-              </div>
-            )}
-
-            {/* Quantiles Grid */}
-            <div className="space-y-2 pt-2">
-              <span className="text-xs font-mono font-semibold text-twin-slate uppercase tracking-wider">
-                Empirical Quantiles (Percentiles)
+      {/* ========================================================================= */}
+      {/* 6. DNA -> SIMULATION WORKFLOW BRIDGE                                      */}
+      {/* ========================================================================= */}
+      <section className="rounded-xl border border-twin-cyan/40 bg-gradient-to-r from-twin-cyan/15 via-[#0B0F19] to-twin-card/70 p-6 sm:p-8 shadow-2xl shadow-twin-cyan/5 space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-2xl">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-twin-cyan" />
+              <h3 className="text-base sm:text-lg font-display font-bold text-twin-white uppercase tracking-wider">
+                DNA READY FOR SYNTHETIC AGENTS
+              </h3>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-twin-cyan/20 border border-twin-cyan/35 text-twin-cyan font-bold uppercase tracking-wider">
+                CALIBRATED PRIOR
               </span>
-              <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5 text-xs font-mono text-center">
-                {Object.entries(profile.amount_distribution.quantiles).map(([q, val]) => (
-                  <div key={q} className="p-2 rounded bg-twin-card/40 border border-twin-border/60">
-                    <span className="text-[10px] text-twin-slate uppercase">{q}</span>
-                    <div className="font-semibold text-twin-white">₹{val.toFixed(0)}</div>
-                  </div>
-                ))}
+            </div>
+            <p className="text-xs sm:text-sm text-twin-slate font-light leading-relaxed">
+              These empirical priors are used to generate Customer Agents and initialize the Payment Twin simulation. The agent population samples amount, channel, retry tolerance, and checkout rails directly from this profile.
+            </p>
+          </div>
+
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => setActivePage("agents")}
+            className="gap-2 font-display uppercase tracking-widest text-xs font-bold whitespace-nowrap self-start md:self-center shadow-lg shadow-twin-cyan/20"
+          >
+            GENERATE / INSPECT CUSTOMER AGENTS →
+          </Button>
+        </div>
+
+        {/* Visual Pipeline Track */}
+        <div className="pt-4 border-t border-twin-border/60">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+            {/* Step 1 */}
+            <div className="p-3 rounded-lg bg-twin-card/60 border border-twin-border flex items-center gap-2.5">
+              <Database className="w-4 h-4 text-twin-slate flex-shrink-0" />
+              <div className="space-y-0.5 min-w-0">
+                <span className="text-[9px] text-twin-slate uppercase font-bold block">STEP 01</span>
+                <span className="text-[11px] font-semibold text-twin-white truncate block">RAW BENCHMARK</span>
+                <span className="text-[9px] text-twin-success block">ACTIVE (650 records)</span>
               </div>
             </div>
 
-            {/* Parametric Fit Status */}
-            {profile.amount_distribution.parametric_fit && (
-              <div className="p-3 rounded-lg bg-twin-card/40 border border-twin-border text-xs flex items-center justify-between font-mono">
-                <span className="text-twin-slate">Lognormal MLE Fit:</span>
-                <span className={profile.amount_distribution.parametric_fit.is_adequate_fit ? "text-twin-success" : "text-twin-warning"}>
-                  {profile.amount_distribution.parametric_fit.is_adequate_fit ? "Adequate Fit (p >= 0.05)" : "Empirical Non-parametric Fallback"}
-                </span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Failure Diagnostics Card */}
-        <Card variant="primary">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertOctagon className="w-4 h-4 text-twin-danger" />
-              4. Failure Diagnostics & Transitions
-            </CardTitle>
-            <CardDescription>
-              Attributed failure sources and empirical retry transition rates
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <span className="text-xs font-mono font-semibold text-twin-slate uppercase tracking-wider">
-                Error Source Attribution
-              </span>
-              <div className="space-y-1.5">
-                {Object.entries(profile.failure_diagnostics.error_source_distribution).map(([src, share]) => (
-                  <div key={src} className="flex items-center justify-between text-xs font-mono p-2 rounded bg-twin-card/40 border border-twin-border/60">
-                    <span className="text-twin-slate capitalize">{src}:</span>
-                    <span className="text-twin-danger font-bold">{(share * 100).toFixed(1)}%</span>
-                  </div>
-                ))}
+            {/* Step 2 */}
+            <div className="p-3 rounded-lg bg-twin-cyan/10 border border-twin-cyan/40 flex items-center gap-2.5 shadow-md shadow-twin-cyan/5">
+              <Dna className="w-4 h-4 text-twin-cyan flex-shrink-0" />
+              <div className="space-y-0.5 min-w-0">
+                <span className="text-[9px] text-twin-cyan uppercase font-bold block">STEP 02</span>
+                <span className="text-[11px] font-bold text-twin-white truncate block">BEHAVIORAL DNA</span>
+                <span className="text-[9px] text-twin-cyan font-semibold block">CALIBRATED (v1.0.0)</span>
               </div>
             </div>
 
-            {/* Retry Transition Stats */}
-            <div className="p-4 rounded-lg bg-twin-card/50 border border-twin-border space-y-2 text-xs font-mono">
-              <div className="flex justify-between">
-                <span className="text-twin-slate">Retry Propensity on Failure:</span>
-                <span className="text-twin-white font-semibold">
-                  {profile.empirical_transitions.overall_retry_probability_on_failure !== null
-                    ? `${((profile.empirical_transitions.overall_retry_probability_on_failure ?? 0) * 100).toFixed(1)}%`
-                    : "Unobserved"}
-                </span>
+            {/* Step 3 */}
+            <div className="p-3 rounded-lg bg-twin-card/40 border border-twin-border/70 flex items-center gap-2.5">
+              <Bot className="w-4 h-4 text-twin-indigo flex-shrink-0" />
+              <div className="space-y-0.5 min-w-0">
+                <span className="text-[9px] text-twin-slate uppercase font-bold block">STEP 03</span>
+                <span className="text-[11px] font-semibold text-twin-white truncate block">CUSTOMER AGENTS</span>
+                <span className="text-[9px] text-twin-indigo block">DOWNSTREAM CONSUMER</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-twin-slate">Method Switch on Retry:</span>
-                <span className="text-twin-cyan font-semibold">
-                  {profile.empirical_transitions.method_switch_on_retry_probability !== null
-                    ? `${((profile.empirical_transitions.method_switch_on_retry_probability ?? 0) * 100).toFixed(1)}%`
-                    : "Unobserved"}
-                </span>
-              </div>
-              <p className="text-[10px] text-twin-slate/70 pt-1 border-t border-twin-border/40">
-                {profile.empirical_transitions.unobserved_dropouts_note}
-              </p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+
+            {/* Step 4 */}
+            <div className="p-3 rounded-lg bg-twin-card/40 border border-twin-border/70 flex items-center gap-2.5">
+              <Cpu className="w-4 h-4 text-twin-slate flex-shrink-0" />
+              <div className="space-y-0.5 min-w-0">
+                <span className="text-[9px] text-twin-slate uppercase font-bold block">STEP 04</span>
+                <span className="text-[11px] font-semibold text-twin-white truncate block">PAYMENT TWIN</span>
+                <span className="text-[9px] text-twin-slate block">SIMULATION ENGINE</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
