@@ -23,11 +23,20 @@ import {
   TrendingUp, 
   DollarSign, 
   RotateCcw,
-  Zap
+  Zap,
+  Compass
 } from "lucide-react";
+import { ScenarioParetoHandoff } from "@/types/handoff";
 
 export const ScenariosView: React.FC = () => {
-  const { activeTwinHandoff, setActiveTwinHandoff } = useAppStore();
+  const { 
+    activeTwinHandoff, 
+    setActiveTwinHandoff,
+    activeTwinScenarioHandoff,
+    setActiveTwinScenarioHandoff,
+    setActiveScenarioParetoHandoff,
+    setActivePage,
+  } = useAppStore();
   const { data: dnaStatus } = useDNAStatus();
   const { data: dnaProfile } = useDNAProfile();
 
@@ -141,6 +150,26 @@ export const ScenariosView: React.FC = () => {
 
   const activeComparison = compareResult?.comparisons?.[0];
 
+  const handleHandoffToPareto = () => {
+    if (!activeComparison) return;
+    const convComp = activeComparison.metric_comparisons["conversion_rate_percent"];
+    const revComp = activeComparison.metric_comparisons["net_merchant_revenue_inr"];
+    const handoff: ScenarioParetoHandoff = {
+      handoff_id: `hnd_scen_${Date.now()}`,
+      scenario_id: activeComparison.scenario_id,
+      scenario_name: activeComparison.scenario_name,
+      target_intervention: "Counterfactual Policy Intervention",
+      conversion_lift_percent: convComp?.absolute_delta ?? 0,
+      revenue_lift_inr: revComp?.absolute_delta ?? 0,
+      baseline_conversion_rate: convComp?.baseline_value ?? 83.0,
+      projected_conversion_rate: convComp?.scenario_value ?? 0,
+      population_size: populationSize,
+      random_seed: randomSeed,
+    };
+    setActiveScenarioParetoHandoff(handoff);
+    setActivePage("pareto");
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in-50 duration-200">
       {/* Header & Meta */}
@@ -168,6 +197,38 @@ export const ScenariosView: React.FC = () => {
           <ProvenanceTag provenance={dnaStatus?.provenance_type as any || "UNAVAILABLE"} />
         </div>
       </div>
+
+      {/* Twin Bottleneck Context Banner (if navigated from Payment Twin) */}
+      {activeTwinScenarioHandoff && (
+        <div className="p-4 rounded-xl border border-twin-cyan/40 bg-gradient-to-r from-twin-cyan/10 via-[#0B0F19] to-[#080B12] flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in-50">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-twin-cyan/15 border border-twin-cyan/30 text-twin-cyan">
+              <FlaskConical className="w-5 h-5" />
+            </div>
+            <div className="space-y-1 text-xs font-mono">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-twin-white uppercase tracking-wider">
+                  TWIN CONTEXT: {activeTwinScenarioHandoff.top_bottleneck.replace(/_/g, " ")}
+                </span>
+                <Badge variant="cyan" size="sm">SIMULATION BASELINE</Badge>
+              </div>
+              <p className="text-twin-slate text-[11px] font-light">
+                Observed {activeTwinScenarioHandoff.bottleneck_count} dropouts ({activeTwinScenarioHandoff.bottleneck_percent}% drag) on {activeTwinScenarioHandoff.population_size.toLocaleString()} simulated agents. Baseline Conversion: <strong className="text-twin-white">{activeTwinScenarioHandoff.baseline_conversion_rate}%</strong> | Baseline Net Revenue: <strong className="text-twin-white">₹{activeTwinScenarioHandoff.baseline_net_revenue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</strong>.
+              </p>
+            </div>
+          </div>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setActiveTwinScenarioHandoff(null)}
+            className="text-twin-slate hover:text-twin-white uppercase tracking-wider text-xs"
+          >
+            <X className="w-4 h-4" />
+            Dismiss
+          </Button>
+        </div>
+      )}
 
       {/* Guardian Anomaly Context Banner (if navigated from Guardian) */}
       {activeTwinHandoff && (
@@ -478,6 +539,43 @@ export const ScenariosView: React.FC = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* Contextual Workflow Bridge: What-If -> Pareto Explorer */}
+          <div className="p-4 rounded-xl border border-twin-indigo/40 bg-gradient-to-r from-twin-indigo/10 via-[#0B0F19] to-twin-card/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg shadow-twin-indigo/5">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Compass className="w-4 h-4 text-twin-indigo" />
+                <span className="text-xs font-mono font-bold text-twin-white uppercase tracking-widest">
+                  Evaluate Multi-Objective Trade-Offs in Pareto Explorer
+                </span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-twin-indigo/15 border border-twin-indigo/30 text-twin-indigo font-semibold uppercase tracking-wider">
+                  OPTIMIZATION FRONTIER
+                </span>
+              </div>
+              <p className="text-[11px] text-twin-slate/90 font-light max-w-2xl">
+                This counterfactual experiment projected a{" "}
+                <strong className="text-twin-success">
+                  {(activeComparison.metric_comparisons["conversion_rate_percent"]?.absolute_delta ?? 0) >= 0 ? "+" : ""}
+                  {(activeComparison.metric_comparisons["conversion_rate_percent"]?.absolute_delta ?? 0).toFixed(1)}%
+                </strong>{" "}
+                conversion lift and{" "}
+                <strong className="text-twin-white">
+                  {(activeComparison.metric_comparisons["net_merchant_revenue_inr"]?.absolute_delta ?? 0) >= 0 ? "+₹" : "-₹"}
+                  {Math.abs(activeComparison.metric_comparisons["net_merchant_revenue_inr"]?.absolute_delta ?? 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                </strong>{" "}
+                net revenue delta. Evaluate whether this operating policy is Pareto-optimal across competing objectives (revenue, conversion, fees) while respecting hard merchant constraints.
+              </p>
+            </div>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleHandoffToPareto}
+              className="gap-2 font-display uppercase tracking-widest text-xs font-bold whitespace-nowrap self-start sm:self-center border-twin-indigo/40 text-twin-white hover:bg-twin-indigo/20"
+            >
+              Evaluate Trade-offs in Pareto →
+            </Button>
+          </div>
         </div>
       )}
     </div>

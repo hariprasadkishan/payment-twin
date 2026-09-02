@@ -23,13 +23,17 @@ import {
   X,
   Sparkles,
   Sliders,
-  Cpu
+  Cpu,
+  FlaskConical
 } from "lucide-react";
+import { TwinScenarioHandoff } from "@/types/handoff";
 
 export const TwinView: React.FC = () => {
   const { 
     activeTwinHandoff, 
-    setActiveTwinHandoff 
+    setActiveTwinHandoff,
+    setActivePage,
+    setActiveTwinScenarioHandoff,
   } = useAppStore();
 
   const { data: dnaStatus } = useDNAStatus();
@@ -77,6 +81,45 @@ export const TwinView: React.FC = () => {
         random_seed: randomSeed,
       });
     }
+  };
+
+  const handleHandoffToWhatIf = () => {
+    if (!singleResult || !singleResult.kpis) return;
+    const dropoffs = singleResult.funnel_dropoffs || {};
+    const dropoffEntries = Object.entries(dropoffs).sort((a, b) => b[1] - a[1]);
+    const [topKey, topCount] = dropoffEntries[0] || ["TERMINAL_DECLINES", singleResult.kpis.failed_transactions];
+    const totalPop = singleResult.kpis.total_agents || singleResult.population_size || 1000;
+    const topPercent = Number(((topCount / totalPop) * 100).toFixed(1));
+
+    let lowestMethod: string | null = null;
+    let lowestRate: number = 100;
+    if (singleResult.method_breakdown) {
+      Object.entries(singleResult.method_breakdown).forEach(([method, data]) => {
+        if (data.success_rate_percent < lowestRate && data.attempted_count > 0) {
+          lowestRate = data.success_rate_percent;
+          lowestMethod = method;
+        }
+      });
+    }
+
+    const handoff: TwinScenarioHandoff = {
+      handoff_id: `hnd_twin_${Date.now()}`,
+      source_simulation_id: singleResult.simulation_id,
+      top_bottleneck: topKey,
+      bottleneck_count: topCount,
+      bottleneck_percent: topPercent,
+      lowest_performing_method: lowestMethod,
+      lowest_method_rate: lowestMethod ? lowestRate : null,
+      baseline_conversion_rate: singleResult.kpis.conversion_rate_percent,
+      baseline_failure_rate: singleResult.kpis.failure_rate_percent,
+      baseline_abandonment_rate: singleResult.kpis.abandonment_rate_percent,
+      baseline_net_revenue: singleResult.kpis.net_merchant_revenue_inr,
+      population_size: totalPop,
+      random_seed: singleResult.random_seed,
+      provenance_type: singleResult.dna_provenance_type,
+    };
+    setActiveTwinScenarioHandoff(handoff);
+    setActivePage("scenarios");
   };
 
   return (
@@ -476,6 +519,44 @@ export const TwinView: React.FC = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Contextual Workflow Bridge: Twin -> What-If Studio */}
+          {(() => {
+            const dropoffs = singleResult.funnel_dropoffs || {};
+            const dropoffEntries = Object.entries(dropoffs).sort((a, b) => b[1] - a[1]);
+            const [topKey, topCount] = dropoffEntries[0] || ["TERMINAL_DECLINES", singleResult.kpis.failed_transactions];
+            const totalPop = singleResult.kpis.total_agents || singleResult.population_size || 1000;
+            const topPercent = ((topCount / totalPop) * 100).toFixed(1);
+            const formattedBottleneck = topKey.replace(/_/g, " ");
+
+            return (
+              <div className="p-4 rounded-xl border border-twin-cyan/30 bg-gradient-to-r from-twin-cyan/10 via-[#0B0F19] to-twin-card/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg shadow-twin-cyan/5">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <FlaskConical className="w-4 h-4 text-twin-cyan" />
+                    <span className="text-xs font-mono font-bold text-twin-white uppercase tracking-widest">
+                      Simulate Bottleneck Mitigation in What-If Studio
+                    </span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-twin-cyan/15 border border-twin-cyan/30 text-twin-cyan font-semibold uppercase tracking-wider">
+                      CAUSAL LAB
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-twin-slate/90 font-light max-w-2xl">
+                    Simulation identified <strong className="text-twin-white font-semibold">{formattedBottleneck}</strong> ({topCount} agents / {topPercent}%) as the primary conversion drag. Test counterfactual routing shifts, retry overrides, or success boost interventions against this baseline under Common Random Numbers (CRN).
+                  </p>
+                </div>
+
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleHandoffToWhatIf}
+                  className="gap-2 font-display uppercase tracking-widest text-xs font-bold whitespace-nowrap self-start sm:self-center"
+                >
+                  SIMULATE BOTTLENECK MITIGATION →
+                </Button>
+              </div>
+            );
+          })()}
 
           {/* Sampled Agent Traces Preview */}
           {singleResult.preview_agent_traces && singleResult.preview_agent_traces.length > 0 && (

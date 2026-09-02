@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { PageId } from "@/types/navigation";
 import { ProvenanceType, SystemHealthStatus } from "@/types/provenance";
 import { GuardianTwinHandoff } from "@/types/guardian";
+import { TwinScenarioHandoff, ScenarioParetoHandoff } from "@/types/handoff";
 
 interface AppState {
   activePage: PageId;
@@ -18,6 +19,12 @@ interface AppState {
 
   activeTwinHandoff: GuardianTwinHandoff | null;
   setActiveTwinHandoff: (handoff: GuardianTwinHandoff | null) => void;
+
+  activeTwinScenarioHandoff: TwinScenarioHandoff | null;
+  setActiveTwinScenarioHandoff: (handoff: TwinScenarioHandoff | null) => void;
+
+  activeScenarioParetoHandoff: ScenarioParetoHandoff | null;
+  setActiveScenarioParetoHandoff: (handoff: ScenarioParetoHandoff | null) => void;
 
   currentProvenance: ProvenanceType;
   setCurrentProvenance: (prov: ProvenanceType) => void;
@@ -42,10 +49,15 @@ export const useAppStore = create<AppState>((set) => ({
   activeTwinHandoff: null,
   setActiveTwinHandoff: (handoff) => set({ activeTwinHandoff: handoff }),
 
+  activeTwinScenarioHandoff: null,
+  setActiveTwinScenarioHandoff: (handoff) => set({ activeTwinScenarioHandoff: handoff }),
+
+  activeScenarioParetoHandoff: null,
+  setActiveScenarioParetoHandoff: (handoff) => set({ activeScenarioParetoHandoff: handoff }),
+
   currentProvenance: "UNAVAILABLE",
   setCurrentProvenance: (prov) => set({ currentProvenance: prov }),
 
   systemHealth: "unavailable",
   setSystemHealth: (status) => set({ systemHealth: status }),
 }));
-

@@ -17,14 +17,22 @@ import { Drawer } from "@/components/ui/Drawer";
 import { Slider } from "@/components/ui/Slider";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/Table";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
+import { useAppStore } from "@/store/useAppStore";
 import { 
   Sparkles, 
   Scale, 
   ShieldCheck, 
-  Activity
+  Activity,
+  CheckCircle2,
+  AlertTriangle,
+  X
 } from "lucide-react";
 
 export const ParetoView: React.FC = () => {
+  const { 
+    activeScenarioParetoHandoff, 
+    setActiveScenarioParetoHandoff 
+  } = useAppStore();
   const { data: dnaStatus } = useDNAStatus();
 
   // Selected Plot Axes
@@ -123,6 +131,19 @@ export const ParetoView: React.FC = () => {
     average_attempts_per_success: "Avg Attempts / Success",
   };
 
+  // Derive authoritative recommended operating point from non-dominated frontier scenarios
+  const bestCandidate = React.useMemo(() => {
+    if (!paretoResult || !paretoResult.frontier_scenarios || paretoResult.frontier_scenarios.length === 0) {
+      return null;
+    }
+    // Select non-dominated candidate with highest net merchant revenue
+    return paretoResult.frontier_scenarios.reduce((prev, curr) => {
+      const prevRev = prev.objective_values.net_merchant_revenue_inr ?? 0;
+      const currRev = curr.objective_values.net_merchant_revenue_inr ?? 0;
+      return currRev > prevRev ? curr : prev;
+    });
+  }, [paretoResult]);
+
   return (
     <div className="space-y-8 animate-in fade-in-50 duration-200">
       {/* Header & Meta */}
@@ -150,6 +171,38 @@ export const ParetoView: React.FC = () => {
           <ProvenanceTag provenance={dnaStatus?.provenance_type as any || "UNAVAILABLE"} />
         </div>
       </div>
+
+      {/* Scenario Handoff Context Banner (if navigated from What-If Studio) */}
+      {activeScenarioParetoHandoff && (
+        <div className="p-4 rounded-xl border border-twin-indigo/40 bg-gradient-to-r from-twin-indigo/10 via-[#0B0F19] to-[#080B12] flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in-50">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-twin-indigo/15 border border-twin-indigo/30 text-twin-indigo">
+              <Scale className="w-5 h-5" />
+            </div>
+            <div className="space-y-1 text-xs font-mono">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-twin-white uppercase tracking-wider">
+                  SCENARIO CONTEXT: {activeScenarioParetoHandoff.scenario_name}
+                </span>
+                <Badge variant="indigo" size="sm">WHAT-IF INPUT</Badge>
+              </div>
+              <p className="text-twin-slate text-[11px] font-light">
+                Candidate intervention: <strong>{activeScenarioParetoHandoff.target_intervention}</strong>. Projected conversion lift: <strong className="text-twin-success">+{activeScenarioParetoHandoff.conversion_lift_percent.toFixed(1)}%</strong> | Net revenue delta: <strong className="text-twin-white">+₹{activeScenarioParetoHandoff.revenue_lift_inr.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</strong>. Evaluate whether this operating policy remains non-dominated under multiple objectives and hard merchant constraints below.
+              </p>
+            </div>
+          </div>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setActiveScenarioParetoHandoff(null)}
+            className="text-twin-slate hover:text-twin-white uppercase tracking-wider text-xs"
+          >
+            <X className="w-4 h-4" />
+            Dismiss
+          </Button>
+        </div>
+      )}
 
       {/* Optimization Control Panel */}
       <Card variant="primary" className="p-6 space-y-6">
@@ -449,6 +502,131 @@ export const ParetoView: React.FC = () => {
                   </div>
                 </div>
               </div>
+            </Card>
+          )}
+
+          {/* Executive Merchant Decision: Recommended Operating Point */}
+          {bestCandidate ? (
+            <Card variant="primary" className="p-6 space-y-6 border-twin-cyan/40 bg-gradient-to-b from-[#0C1424] via-[#090D18] to-[#070A12] shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-twin-border/60 pb-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-twin-cyan" />
+                    <span className="text-sm font-display font-bold text-twin-white uppercase tracking-wider">
+                      Recommended Operating Point
+                    </span>
+                    <Badge variant="cyan" size="sm">OPTIMAL POLICY</Badge>
+                  </div>
+                  <p className="text-xs text-twin-slate font-light">
+                    Recommended because this candidate is non-dominated on the Pareto frontier and satisfies all configured merchant operational constraints.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono font-bold text-twin-cyan px-2.5 py-1 rounded bg-twin-cyan/15 border border-twin-cyan/30">
+                    CANDIDATE: {bestCandidate.scenario_id}
+                  </span>
+                </div>
+              </div>
+
+              {/* Recommended Parameters Grid */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-twin-slate font-bold">
+                  Recommended Operating Policy Parameters
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
+                  {Object.entries(bestCandidate.parameter_values).map(([param, val]) => (
+                    <div key={param} className="p-3 rounded-lg bg-twin-card/50 border border-twin-border/80 space-y-0.5">
+                      <span className="text-[10px] text-twin-slate uppercase block">{param.replace(/_/g, " ")}:</span>
+                      <span className="text-sm font-bold text-twin-white">
+                        {param.includes("rate") || param.includes("percent") ? `${(val * (val <= 1 ? 100 : 1)).toFixed(1)}%` : val}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Projected Metric Outcomes */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-twin-slate font-bold">
+                  Projected Financial & Conversion Outcomes
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+                  <div className="p-3 rounded-lg bg-twin-card/50 border border-twin-border/80 space-y-0.5">
+                    <span className="text-[10px] text-twin-slate uppercase block">Conversion Rate:</span>
+                    <span className="text-base font-bold text-twin-cyan">
+                      {bestCandidate.objective_values.conversion_rate_percent?.toFixed(1)}%
+                    </span>
+                    {paretoResult.baseline_summary?.conversion_rate_percent !== undefined && (
+                      <span className="text-[10px] text-twin-success block">
+                        {(bestCandidate.objective_values.conversion_rate_percent - paretoResult.baseline_summary.conversion_rate_percent) >= 0 ? "+" : ""}
+                        {(bestCandidate.objective_values.conversion_rate_percent - paretoResult.baseline_summary.conversion_rate_percent).toFixed(1)}% vs baseline
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="p-3 rounded-lg bg-twin-card/50 border border-twin-border/80 space-y-0.5">
+                    <span className="text-[10px] text-twin-slate uppercase block">Net Merchant Revenue:</span>
+                    <span className="text-base font-bold text-twin-white">
+                      ₹{bestCandidate.objective_values.net_merchant_revenue_inr?.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                    </span>
+                    {paretoResult.baseline_summary?.net_merchant_revenue_inr !== undefined && (
+                      <span className="text-[10px] text-twin-success block">
+                        {(bestCandidate.objective_values.net_merchant_revenue_inr - paretoResult.baseline_summary.net_merchant_revenue_inr) >= 0 ? "+₹" : "-₹"}
+                        {Math.abs(bestCandidate.objective_values.net_merchant_revenue_inr - paretoResult.baseline_summary.net_merchant_revenue_inr).toLocaleString("en-IN", { maximumFractionDigits: 0 })} vs baseline
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="p-3 rounded-lg bg-twin-card/50 border border-twin-border/80 space-y-0.5">
+                    <span className="text-[10px] text-twin-slate uppercase block">MDR Processing Fees:</span>
+                    <span className="text-base font-bold text-twin-slate">
+                      ₹{bestCandidate.objective_values.total_processing_fees_inr?.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                    </span>
+                  </div>
+
+                  <div className="p-3 rounded-lg bg-twin-card/50 border border-twin-border/80 space-y-0.5">
+                    <span className="text-[10px] text-twin-slate uppercase block">Frontier Dominance:</span>
+                    <span className="text-base font-bold text-twin-indigo">
+                      Dominates {bestCandidate.dominates_count} candidate{bestCandidate.dominates_count === 1 ? "" : "s"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Constraint Verification Checklist */}
+              <div className="p-4 rounded-xl bg-twin-card/30 border border-twin-border/60 space-y-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-twin-slate font-bold block">
+                  Merchant Hard Constraint Verification
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono">
+                  <div className="flex items-center gap-2 text-twin-success">
+                    <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                    <span>Conversion &ge; {minConversion}% (Actual: {bestCandidate.objective_values.conversion_rate_percent?.toFixed(1)}%)</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-twin-success">
+                    <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                    <span>Fees &le; ₹{maxMdrFees.toLocaleString()} (Actual: ₹{bestCandidate.objective_values.total_processing_fees_inr?.toLocaleString("en-IN", { maximumFractionDigits: 0 })})</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-twin-success">
+                    <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                    <span>Failure Rate &le; {maxFailureRate}% (Satisfied)</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ) : (
+            <Card variant="primary" className="p-6 space-y-3 border-twin-danger/40 bg-twin-danger/5">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-twin-danger" />
+                <h3 className="text-sm font-display font-bold text-twin-white uppercase tracking-wider">
+                  No Feasible Recommendation
+                </h3>
+                <Badge variant="danger" size="sm">CONSTRAINTS VIOLATED</Badge>
+              </div>
+              <p className="text-xs text-twin-slate font-light leading-relaxed">
+                All {paretoResult.total_candidates_evaluated} evaluated candidate configurations violated one or more merchant operational constraints (e.g. minimum conversion rate of {minConversion}% or maximum processing fees of ₹{maxMdrFees.toLocaleString()}). Relax constraints to discover viable operating trade-offs.
+              </p>
             </Card>
           )}
 
