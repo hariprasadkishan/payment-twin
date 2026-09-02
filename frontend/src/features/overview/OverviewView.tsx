@@ -120,13 +120,13 @@ export const OverviewView: React.FC = () => {
                 label={hasData ? "INTELLIGENCE ENGINE ACTIVE" : "ENGINE AWAITING DATA"}
               />
               {isBenchmark && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono border border-twin-warning/30 bg-twin-warning/10 text-twin-warning font-semibold">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono uppercase tracking-wider border border-twin-warning/30 bg-twin-warning/10 text-twin-warning font-semibold">
                   <Sparkles className="w-3.5 h-3.5" />
                   SYNTHETIC BENCHMARK ({sampleCount.toLocaleString()} RECORDS)
                 </span>
               )}
               {hasData && !isBenchmark && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono border border-twin-cyan/30 bg-twin-cyan/10 text-twin-cyan font-semibold">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono uppercase tracking-wider border border-twin-cyan/30 bg-twin-cyan/10 text-twin-cyan font-semibold">
                   <ShieldCheck className="w-3.5 h-3.5" />
                   OBSERVED RAZORPAY TELEMETRY
                 </span>
@@ -141,7 +141,7 @@ export const OverviewView: React.FC = () => {
                 </span> <br />
                 COULD BECOME.
               </h1>
-              <p className="text-sm md:text-base text-twin-slate max-w-xl leading-relaxed font-sans">
+              <p className="text-sm md:text-base text-twin-slate/90 max-w-xl leading-relaxed font-light">
                 Payment Twin learns empirical transaction dynamics from payment records, models autonomous Customer Agents, and tests counterfactual routing interventions before production deployment.
               </p>
             </div>
@@ -152,7 +152,7 @@ export const OverviewView: React.FC = () => {
                 variant="primary"
                 size="md"
                 onClick={() => setActivePage("twin")}
-                className="gap-2 font-display tracking-wide"
+                className="gap-2 font-display tracking-widest uppercase text-xs font-bold"
               >
                 <PlayCircle className="w-4 h-4" />
                 Launch Payment Twin Simulator
@@ -161,7 +161,7 @@ export const OverviewView: React.FC = () => {
                 variant="secondary"
                 size="md"
                 onClick={() => setActivePage("scenarios")}
-                className="gap-2"
+                className="gap-2 uppercase tracking-wider text-xs font-semibold"
               >
                 <Sliders className="w-4 h-4 text-twin-indigo" />
                 What-If Studio
@@ -170,7 +170,7 @@ export const OverviewView: React.FC = () => {
                 variant="ghost"
                 size="md"
                 onClick={() => setActivePage("pareto")}
-                className="gap-2 text-twin-slate hover:text-twin-white"
+                className="gap-2 text-twin-slate hover:text-twin-white uppercase tracking-wider text-xs font-semibold"
               >
                 <Compass className="w-4 h-4 text-twin-cyan" />
                 Pareto Frontier →
@@ -182,11 +182,11 @@ export const OverviewView: React.FC = () => {
           <div className="lg:col-span-5 relative">
             <div className="rounded-xl border border-twin-border/80 bg-[#080B12]/90 backdrop-blur-md p-5 space-y-4 shadow-xl">
               <div className="flex items-center justify-between border-b border-twin-border/60 pb-3">
-                <div className="flex items-center gap-2 text-xs font-mono text-twin-white font-semibold">
+                <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-twin-white font-bold">
                   <Activity className="w-4 h-4 text-twin-cyan animate-pulse" />
                   <span>VIRTUAL AGENT FUNNEL</span>
                 </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-twin-card border border-twin-border text-twin-cyan font-semibold">
+                <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-twin-card border border-twin-border text-twin-cyan font-semibold">
                   {hasData ? "LIVE SIMULATION READY" : "CALIBRATION STANDBY"}
                 </span>
               </div>
@@ -208,7 +208,7 @@ export const OverviewView: React.FC = () => {
               {/* Status summary below canvas */}
               <div className="grid grid-cols-2 gap-2 text-xs font-mono">
                 <div className="p-2.5 rounded bg-twin-card/40 border border-twin-border/60 space-y-0.5">
-                  <span className="text-[10px] text-twin-slate">Sample Population:</span>
+                  <span className="text-[10px] uppercase tracking-wider text-twin-slate font-medium">Sample Population:</span>
                   <div className="text-sm font-bold text-twin-white flex items-center gap-1">
                     {hasData ? (
                       <>
@@ -221,7 +221,7 @@ export const OverviewView: React.FC = () => {
                   </div>
                 </div>
                 <div className="p-2.5 rounded bg-twin-card/40 border border-twin-border/60 space-y-0.5">
-                  <span className="text-[10px] text-twin-slate">Confidence Grade:</span>
+                  <span className="text-[10px] uppercase tracking-wider text-twin-slate font-medium">Confidence Grade:</span>
                   <div className="text-sm font-bold text-twin-cyan">
                     {dnaStatus ? dnaStatus.confidence_grade : "UNAVAILABLE"}
                   </div>
@@ -242,11 +242,11 @@ export const OverviewView: React.FC = () => {
               <Cpu className="w-4 h-4 text-twin-cyan" />
               End-to-End Intelligence Pipeline
             </h2>
-            <p className="text-xs text-twin-slate">
+            <p className="text-xs text-twin-slate/85 font-light">
               How observed transaction telemetry is transformed into actionable Pareto optimization.
             </p>
           </div>
-          <span className="text-[11px] font-mono text-twin-slate/70 hidden sm:block">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-twin-slate/70 hidden sm:block">
             5 SEQUENTIAL STAGES
           </span>
         </div>
@@ -258,7 +258,7 @@ export const OverviewView: React.FC = () => {
             className="group relative p-5 rounded-xl border border-twin-border/80 bg-[#0C101B]/80 hover:bg-[#0F1424] hover:border-twin-cyan/40 transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-3"
           >
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono font-bold text-twin-cyan px-2 py-0.5 rounded bg-twin-cyan/10 border border-twin-cyan/20">
+              <span className="text-[10px] font-mono font-bold text-twin-cyan px-2 py-0.5 rounded bg-twin-cyan/10 border border-twin-cyan/20 uppercase tracking-widest">
                 01
               </span>
               <Layers className="w-4 h-4 text-twin-cyan group-hover:scale-110 transition-transform" />
@@ -267,11 +267,11 @@ export const OverviewView: React.FC = () => {
               <h3 className="text-sm font-display font-bold text-twin-white group-hover:text-twin-cyan transition-colors">
                 <TextRoll>Behavioral DNA</TextRoll>
               </h3>
-              <p className="text-[11px] text-twin-slate leading-relaxed pt-1">
+              <p className="text-[11px] text-twin-slate/85 font-light leading-relaxed pt-1">
                 Learn empirical method priors, Wilson 95% CIs, and failure diagnostics.
               </p>
             </div>
-            <div className="text-[10px] font-mono text-twin-slate/80 flex items-center gap-1 group-hover:text-twin-cyan transition-colors pt-1">
+            <div className="text-[10px] font-mono uppercase tracking-wider text-twin-slate/80 flex items-center gap-1 group-hover:text-twin-cyan transition-colors pt-1">
               <span>View Profile</span>
               <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
             </div>
@@ -283,7 +283,7 @@ export const OverviewView: React.FC = () => {
             className="group relative p-5 rounded-xl border border-twin-border/80 bg-[#0C101B]/80 hover:bg-[#0F1424] hover:border-twin-indigo/40 transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-3"
           >
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono font-bold text-twin-indigo px-2 py-0.5 rounded bg-twin-indigo/10 border border-twin-indigo/20">
+              <span className="text-[10px] font-mono font-bold text-twin-indigo px-2 py-0.5 rounded bg-twin-indigo/10 border border-twin-indigo/20 uppercase tracking-widest">
                 02
               </span>
               <Bot className="w-4 h-4 text-twin-indigo group-hover:scale-110 transition-transform" />
@@ -292,11 +292,11 @@ export const OverviewView: React.FC = () => {
               <h3 className="text-sm font-display font-bold text-twin-white group-hover:text-twin-indigo transition-colors">
                 <TextRoll>Customer Agents</TextRoll>
               </h3>
-              <p className="text-[11px] text-twin-slate leading-relaxed pt-1">
+              <p className="text-[11px] text-twin-slate/85 font-light leading-relaxed pt-1">
                 Synthesize calibrated archetype populations with latent friction traits.
               </p>
             </div>
-            <div className="text-[10px] font-mono text-twin-slate/80 flex items-center gap-1 group-hover:text-twin-indigo transition-colors pt-1">
+            <div className="text-[10px] font-mono uppercase tracking-wider text-twin-slate/80 flex items-center gap-1 group-hover:text-twin-indigo transition-colors pt-1">
               <span>Generate Studio</span>
               <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
             </div>
@@ -308,7 +308,7 @@ export const OverviewView: React.FC = () => {
             className="group relative p-5 rounded-xl border border-twin-cyan/30 bg-gradient-to-b from-[#0F1626] to-[#0A0E1A] hover:border-twin-cyan/60 transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-3 shadow-lg shadow-twin-cyan/5"
           >
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono font-bold text-twin-cyan px-2 py-0.5 rounded bg-twin-cyan/20 border border-twin-cyan/30">
+              <span className="text-[10px] font-mono font-bold text-twin-cyan px-2 py-0.5 rounded bg-twin-cyan/20 border border-twin-cyan/30 uppercase tracking-widest">
                 03 HERO
               </span>
               <PlayCircle className="w-4 h-4 text-twin-cyan group-hover:scale-110 transition-transform" />
@@ -317,11 +317,11 @@ export const OverviewView: React.FC = () => {
               <h3 className="text-sm font-display font-bold text-twin-white group-hover:text-twin-cyan transition-colors">
                 <TextRoll>Payment Twin</TextRoll>
               </h3>
-              <p className="text-[11px] text-twin-slate leading-relaxed pt-1">
+              <p className="text-[11px] text-twin-slate/85 font-light leading-relaxed pt-1">
                 Simulate 2D particle funnel journeys, multi-attempt retries & latency.
               </p>
             </div>
-            <div className="text-[10px] font-mono text-twin-cyan font-semibold flex items-center gap-1 group-hover:underline pt-1">
+            <div className="text-[10px] font-mono uppercase tracking-wider text-twin-cyan font-bold flex items-center gap-1 group-hover:underline pt-1">
               <span>Run Funnel Simulator</span>
               <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
             </div>
@@ -333,7 +333,7 @@ export const OverviewView: React.FC = () => {
             className="group relative p-5 rounded-xl border border-twin-border/80 bg-[#0C101B]/80 hover:bg-[#0F1424] hover:border-twin-indigo/40 transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-3"
           >
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono font-bold text-twin-indigo px-2 py-0.5 rounded bg-twin-indigo/10 border border-twin-indigo/20">
+              <span className="text-[10px] font-mono font-bold text-twin-indigo px-2 py-0.5 rounded bg-twin-indigo/10 border border-twin-indigo/20 uppercase tracking-widest">
                 04
               </span>
               <Sliders className="w-4 h-4 text-twin-indigo group-hover:scale-110 transition-transform" />
@@ -342,11 +342,11 @@ export const OverviewView: React.FC = () => {
               <h3 className="text-sm font-display font-bold text-twin-white group-hover:text-twin-indigo transition-colors">
                 <TextRoll>What-If Studio</TextRoll>
               </h3>
-              <p className="text-[11px] text-twin-slate leading-relaxed pt-1">
+              <p className="text-[11px] text-twin-slate/85 font-light leading-relaxed pt-1">
                 Test counterfactual levers with paired Common Random Numbers (CRN).
               </p>
             </div>
-            <div className="text-[10px] font-mono text-twin-slate/80 flex items-center gap-1 group-hover:text-twin-indigo transition-colors pt-1">
+            <div className="text-[10px] font-mono uppercase tracking-wider text-twin-slate/80 flex items-center gap-1 group-hover:text-twin-indigo transition-colors pt-1">
               <span>Run Counterfactual</span>
               <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
             </div>
@@ -358,7 +358,7 @@ export const OverviewView: React.FC = () => {
             className="group relative p-5 rounded-xl border border-twin-border/80 bg-[#0C101B]/80 hover:bg-[#0F1424] hover:border-twin-cyan/40 transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-3"
           >
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono font-bold text-twin-cyan px-2 py-0.5 rounded bg-twin-cyan/10 border border-twin-cyan/20">
+              <span className="text-[10px] font-mono font-bold text-twin-cyan px-2 py-0.5 rounded bg-twin-cyan/10 border border-twin-cyan/20 uppercase tracking-widest">
                 05
               </span>
               <Compass className="w-4 h-4 text-twin-cyan group-hover:scale-110 transition-transform" />
@@ -367,11 +367,11 @@ export const OverviewView: React.FC = () => {
               <h3 className="text-sm font-display font-bold text-twin-white group-hover:text-twin-cyan transition-colors">
                 <TextRoll>Pareto Frontier</TextRoll>
               </h3>
-              <p className="text-[11px] text-twin-slate leading-relaxed pt-1">
+              <p className="text-[11px] text-twin-slate/85 font-light leading-relaxed pt-1">
                 Discover non-dominated trade-offs balancing revenue, conversion & fees.
               </p>
             </div>
-            <div className="text-[10px] font-mono text-twin-slate/80 flex items-center gap-1 group-hover:text-twin-cyan transition-colors pt-1">
+            <div className="text-[10px] font-mono uppercase tracking-wider text-twin-slate/80 flex items-center gap-1 group-hover:text-twin-cyan transition-colors pt-1">
               <span>Explore Trade-offs</span>
               <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
             </div>
@@ -395,12 +395,12 @@ export const OverviewView: React.FC = () => {
                   <h3 className="text-sm font-display font-bold text-twin-white">
                     Empirical Payment Instrument Mix
                   </h3>
-                  <p className="text-xs text-twin-slate">
+                  <p className="text-xs text-twin-slate/85 font-light">
                     Observed payment method distribution across {sampleCount.toLocaleString()} transactions
                   </p>
                 </div>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => setActivePage("dna")} className="text-xs text-twin-cyan">
+              <Button variant="ghost" size="sm" onClick={() => setActivePage("dna")} className="text-xs text-twin-cyan uppercase tracking-wider font-semibold">
                 Full Profile →
               </Button>
             </div>
@@ -411,19 +411,19 @@ export const OverviewView: React.FC = () => {
 
                 <div className="grid grid-cols-3 gap-3 text-xs font-mono">
                   <div className="p-3 rounded-lg bg-twin-card/50 border border-twin-border space-y-1">
-                    <span className="text-twin-slate">Total Volume:</span>
+                    <span className="text-twin-slate uppercase tracking-wider text-[10px]">Total Volume:</span>
                     <div className="text-sm font-bold text-twin-white">
                       ₹{summary?.financial_metrics?.total_amount_inr?.toLocaleString("en-IN", { minimumFractionDigits: 0 }) || "0"}
                     </div>
                   </div>
                   <div className="p-3 rounded-lg bg-twin-card/50 border border-twin-border space-y-1">
-                    <span className="text-twin-slate">Overall Capture:</span>
+                    <span className="text-twin-slate uppercase tracking-wider text-[10px]">Overall Capture:</span>
                     <div className="text-sm font-bold text-twin-success flex items-baseline gap-0.5">
                       <AnimatedNumber value={summary?.status_metrics?.success_rate_percent || 0} decimals={1} />%
                     </div>
                   </div>
                   <div className="p-3 rounded-lg bg-twin-card/50 border border-twin-border space-y-1">
-                    <span className="text-twin-slate">Average Ticket:</span>
+                    <span className="text-twin-slate uppercase tracking-wider text-[10px]">Average Ticket:</span>
                     <div className="text-sm font-bold text-twin-white">
                       ₹{summary?.financial_metrics?.average_amount_inr?.toFixed(0) || "0"}
                     </div>
@@ -432,7 +432,7 @@ export const OverviewView: React.FC = () => {
               </div>
             ) : (
               <div className="p-6 rounded-xl border border-twin-border/50 bg-twin-card/30 text-center space-y-4">
-                <p className="text-xs text-twin-slate max-w-md mx-auto leading-relaxed">
+                <p className="text-xs text-twin-slate max-w-md mx-auto leading-relaxed font-light">
                   No payment records currently loaded. Connect Razorpay Test Mode or load the synthetic benchmark dataset to calibrate Behavioral DNA.
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-3">
@@ -441,6 +441,7 @@ export const OverviewView: React.FC = () => {
                     size="sm"
                     isLoading={isBenchmarkLoading}
                     onClick={() => loadBenchmark()}
+                    className="uppercase tracking-wider text-xs font-bold"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-twin-warning" />
                     Load Synthetic Benchmark (650 Records)
@@ -450,6 +451,7 @@ export const OverviewView: React.FC = () => {
                     size="sm"
                     isLoading={isIngesting}
                     onClick={() => triggerIngest({ count: 100 })}
+                    className="uppercase tracking-wider text-xs font-semibold"
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
                     Sync Test Payments
@@ -465,7 +467,7 @@ export const OverviewView: React.FC = () => {
           <div className="p-6 rounded-2xl border border-twin-border bg-[#0B0F19]/90 backdrop-blur-md flex flex-col justify-between space-y-6 h-full">
             <div className="space-y-4">
               <div className="flex items-center justify-between border-b border-twin-border/60 pb-4">
-                <div className="flex items-center gap-2 text-xs font-mono text-twin-slate uppercase tracking-wider">
+                <div className="flex items-center gap-2 text-xs font-mono text-twin-slate uppercase tracking-widest font-bold">
                   <ShieldCheck className="w-4 h-4 text-twin-cyan" />
                   <span>Payment Guardian Sentinel</span>
                 </div>
@@ -478,31 +480,31 @@ export const OverviewView: React.FC = () => {
                 <h3 className="text-sm font-display font-bold text-twin-white">
                   Statistical Drift & Telemetry Guard
                 </h3>
-                <p className="text-xs text-twin-slate leading-relaxed">
+                <p className="text-xs text-twin-slate/85 leading-relaxed font-light">
                   Monitors population shifts in capture rates and bank errors using Benjamini-Hochberg FDR control and sends triage context directly to the Twin.
                 </p>
               </div>
 
               <div className="p-4 rounded-xl bg-twin-card/50 border border-twin-border/60 text-xs font-mono space-y-2.5">
                 <div className="flex justify-between items-center">
-                  <span className="text-twin-slate">System Sentinel Health:</span>
+                  <span className="text-twin-slate uppercase tracking-wider text-[10px]">System Sentinel Health:</span>
                   <span className="text-twin-success font-semibold flex items-center gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     SYSTEM NOMINAL
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-twin-slate">Active Anomaly Alerts:</span>
+                  <span className="text-twin-slate uppercase tracking-wider text-[10px]">Active Anomaly Alerts:</span>
                   <span className="text-sm font-bold text-twin-white">
                     {guardianStatus?.active_alerts_count ?? 0}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-twin-slate">Statistical Drift Test:</span>
+                  <span className="text-twin-slate uppercase tracking-wider text-[10px]">Statistical Drift Test:</span>
                   <span className="text-twin-cyan">Two-Proportion Z + PSI</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-twin-slate">Twin Handoff Pipe:</span>
+                  <span className="text-twin-slate uppercase tracking-wider text-[10px]">Twin Handoff Pipe:</span>
                   <span className="text-twin-indigo">GuardianTwinHandoff Ready</span>
                 </div>
               </div>
@@ -512,7 +514,7 @@ export const OverviewView: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={() => setActivePage("guardian")}
-              className="w-full gap-2"
+              className="w-full gap-2 uppercase tracking-wider text-xs font-semibold"
             >
               Open Guardian Sentinel Cockpit →
             </Button>

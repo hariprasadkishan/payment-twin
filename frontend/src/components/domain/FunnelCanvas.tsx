@@ -131,7 +131,7 @@ export const FunnelCanvas: React.FC<FunnelCanvasProps> = ({
 
       // 1. Draw Funnel Pipeline Spine & Connectors
       ctx.strokeStyle = "rgba(28, 37, 56, 0.75)";
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 4]);
 
       // Main trunk line from 0 to 5
@@ -218,15 +218,15 @@ export const FunnelCanvas: React.FC<FunnelCanvasProps> = ({
         const boxWidth = isTerm ? 104 : 96;
         const boxHeight = isTerm ? 30 : 44;
 
-        ctx.fillStyle = isTerm ? "rgba(15, 20, 34, 0.95)" : "rgba(15, 20, 34, 0.88)";
-        ctx.strokeStyle = node.statusColor || "rgba(28, 37, 56, 0.9)";
+        ctx.fillStyle = isTerm ? "rgba(15, 20, 34, 0.95)" : "rgba(15, 20, 34, 0.90)";
+        ctx.strokeStyle = node.statusColor || "rgba(28, 37, 56, 0.95)";
         ctx.lineWidth = 1;
 
-        // Rounded rect
+        // Rounded rect with crisp 6px corners (precision geometry)
         const rx = nx - boxWidth / 2;
         const ry = ny - boxHeight / 2;
         ctx.beginPath();
-        ctx.roundRect(rx, ry, boxWidth, boxHeight, 8);
+        ctx.roundRect(rx, ry, boxWidth, boxHeight, 6);
         ctx.fill();
         ctx.stroke();
 
@@ -287,7 +287,7 @@ export const FunnelCanvas: React.FC<FunnelCanvasProps> = ({
 
       {/* Overlay Engine Status Badge */}
       <div className="absolute top-4 left-4 flex items-center gap-2">
-        <div className="px-3 py-1 rounded-full text-[11px] font-mono border border-twin-border bg-twin-card/90 backdrop-blur-md text-twin-slate flex items-center gap-2">
+        <div className="px-3 py-1 rounded text-[10px] font-mono uppercase tracking-widest border border-twin-border bg-twin-card/90 backdrop-blur-md text-twin-slate flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-twin-cyan animate-pulse" />
           <span>ENGINE:</span>
           <span className="text-twin-cyan font-bold">
@@ -298,15 +298,15 @@ export const FunnelCanvas: React.FC<FunnelCanvasProps> = ({
 
       {/* Funnel Stage Distinction Legend */}
       <div className="absolute top-4 right-4 hidden md:flex items-center gap-2">
-        <div className="px-3 py-1 rounded-full text-[10px] font-mono border border-twin-border/80 bg-twin-card/90 backdrop-blur-md text-twin-slate">
+        <div className="px-3 py-1 rounded text-[10px] font-mono uppercase tracking-wider border border-twin-border/80 bg-twin-card/90 backdrop-blur-md text-twin-slate">
           Stages 1–3: <span className="text-twin-white font-medium">Customer Agents</span> | Stages 4–6: <span className="text-twin-cyan font-medium">Payment Attempts (with retries)</span>
         </div>
       </div>
 
       {/* Bottom Explanatory Strip */}
-      <div className="absolute bottom-3 left-4 right-4 hidden sm:flex items-center justify-between text-[10px] font-mono text-twin-slate/70 px-3 py-1 rounded bg-[#0A0E1A]/80 border border-twin-border/40">
-        <span>AGENTS ≠ ATTEMPTS: Multi-attempt retries expand throughput at method & gateway stages.</span>
-        <span className="text-twin-cyan">Markov Chain Funnel Simulator</span>
+      <div className="absolute bottom-3 left-4 right-4 hidden sm:flex items-center justify-between text-[10px] font-mono text-twin-slate/75 px-3 py-1 rounded bg-[#0A0E1A]/90 border border-twin-border/50">
+        <span className="tracking-wide">AGENTS ≠ ATTEMPTS: Multi-attempt retries expand throughput at method & gateway stages.</span>
+        <span className="text-twin-cyan uppercase tracking-widest font-bold">Discrete-Event Simulation</span>
       </div>
     </div>
   );
