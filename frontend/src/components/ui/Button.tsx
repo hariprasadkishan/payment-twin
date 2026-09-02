@@ -10,19 +10,19 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "primary", size = "md", isLoading = false, children, disabled, ...props }, ref) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-sans font-medium rounded-lg transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-twin-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-twin-bg disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]";
+      "inline-flex items-center justify-center rounded-md font-sans font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#243b7a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f7f5] disabled:pointer-events-none disabled:opacity-50";
 
     const variants = {
       primary:
-        "bg-twin-cyan text-twin-bg font-semibold hover:bg-twin-cyan/90 shadow-[0_0_15px_rgba(6,182,212,0.25)] hover:shadow-[0_0_20px_rgba(6,182,212,0.35)]",
+        "border border-[#243b7a] bg-[#243b7a] font-semibold text-white hover:bg-[#1c3066]",
       secondary:
-        "bg-twin-card border border-twin-border text-twin-white hover:bg-twin-card/80 hover:border-twin-slate/40",
+        "border border-[#d1d5ce] bg-white text-[#17211d] hover:bg-[#f7f7f5]",
       ghost:
-        "bg-transparent text-twin-slate hover:text-twin-white hover:bg-twin-card/50",
+        "bg-transparent text-[#5e6963] hover:bg-[#f0f1ee] hover:text-[#17211d]",
       danger:
-        "bg-twin-danger/10 border border-twin-danger/30 text-twin-danger hover:bg-twin-danger/20",
+        "border border-[#f0c9c6] bg-[#fbeceb] text-[#b23a36] hover:bg-[#f8dfdd]",
       outline:
-        "bg-transparent border border-twin-border text-twin-white hover:border-twin-cyan/50 hover:text-twin-cyan",
+        "border border-[#aeb9dc] bg-transparent text-[#243b7a] hover:bg-[#e8edfb]",
     };
 
     const sizes = {

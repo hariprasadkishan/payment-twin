@@ -1,178 +1,25 @@
 import React from "react";
-import { 
-  LayoutDashboard, 
-  Dna, 
-  Bot, 
-  ShieldAlert, 
-  PlayCircle, 
-  SlidersHorizontal, 
-  TrendingUp, 
-  Settings, 
-  PanelLeftClose, 
-  PanelLeft,
-  Cpu
-} from "lucide-react";
+import { BarChart3, Bot, ChevronLeft, ChevronRight, Gauge, GitBranch, ShieldAlert, SlidersHorizontal, Settings2, Sparkles } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
-import { PageId, NavSection } from "@/types/navigation";
+import { PageId } from "@/types/navigation";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/Badge";
 import { useGuardianStatus } from "@/hooks/useGuardian";
 
-const ICONS: Record<PageId, React.ElementType> = {
-  overview: LayoutDashboard,
-  dna: Dna,
-  agents: Bot,
-  guardian: ShieldAlert,
-  twin: PlayCircle,
-  scenarios: SlidersHorizontal,
-  pareto: TrendingUp,
-  settings: Settings,
-};
+type NavItem = { id: PageId; label: string; icon: React.ElementType };
+const groups: { label?: string; items: NavItem[] }[] = [
+  { items: [{ id: "overview", label: "Overview", icon: BarChart3 }] },
+  { label: "Intelligence", items: [{ id: "dna", label: "Behavioral DNA", icon: Gauge }, { id: "agents", label: "Customer Agents", icon: Bot }, { id: "guardian", label: "Payment Guardian", icon: ShieldAlert }] },
+  { label: "Simulation", items: [{ id: "twin", label: "Payment Twin", icon: Sparkles }, { id: "scenarios", label: "What-If Studio", icon: SlidersHorizontal }, { id: "pareto", label: "Pareto Optimizer", icon: GitBranch }] },
+  { label: "System", items: [{ id: "settings", label: "Settings", icon: Settings2 }] },
+];
 
 export const Sidebar: React.FC = () => {
   const { activePage, setActivePage, isSidebarCollapsed, toggleSidebar } = useAppStore();
   const { data: guardianStatus } = useGuardianStatus();
-  const activeAlertsCount = guardianStatus?.active_alerts_count ?? 0;
-
-  const navSections: NavSection[] = [
-    {
-      title: "OVERVIEW",
-      items: [
-        { id: "overview", label: "Command Center" },
-      ],
-    },
-    {
-      title: "INTELLIGENCE",
-      items: [
-        { id: "dna", label: "Behavioral DNA" },
-        { id: "agents", label: "Customer Agents" },
-        { 
-          id: "guardian", 
-          label: "Payment Guardian", 
-          badge: activeAlertsCount > 0 ? activeAlertsCount : undefined, 
-          badgeVariant: activeAlertsCount > 0 ? "danger" : "neutral" 
-        },
-      ],
-    },
-    {
-      title: "SIMULATION",
-      items: [
-        { id: "twin", label: "Payment Twin" },
-        { id: "scenarios", label: "What-If Studio" },
-        { id: "pareto", label: "Pareto Explorer" },
-      ],
-    },
-    {
-      title: "SYSTEM",
-      items: [
-        { id: "settings", label: "Data & Settings" },
-      ],
-    },
-  ];
-
-  return (
-    <aside
-      className={cn(
-        "h-screen sticky top-0 flex flex-col justify-between border-r border-twin-border bg-[#090D16] transition-all duration-200 z-30",
-        isSidebarCollapsed ? "w-16" : "w-64"
-      )}
-    >
-      {/* Header / Brand Mark */}
-      <div>
-        <div className="h-16 px-4 flex items-center justify-between border-b border-twin-border/60">
-          {!isSidebarCollapsed && (
-            <div className="flex items-center gap-2.5">
-              <div className="p-1.5 rounded-lg bg-twin-cyan/15 border border-twin-cyan/30 text-twin-cyan">
-                <Cpu className="w-4 h-4" />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-display font-bold text-sm tracking-tight text-twin-white">
-                  PAYMENT <span className="text-twin-cyan">TWIN</span>
-                </span>
-                <span className="text-[9px] font-mono text-twin-slate tracking-wider uppercase">
-                  Intelligence Cockpit
-                </span>
-              </div>
-            </div>
-          )}
-
-          {isSidebarCollapsed && (
-            <div className="p-2 rounded-lg bg-twin-cyan/15 border border-twin-cyan/30 text-twin-cyan mx-auto">
-              <Cpu className="w-4 h-4" />
-            </div>
-          )}
-
-          <button
-            onClick={toggleSidebar}
-            className="p-1.5 rounded-md text-twin-slate hover:text-twin-white hover:bg-twin-card/50 transition-colors hidden md:flex"
-            title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-          >
-            {isSidebarCollapsed ? <PanelLeft className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
-          </button>
-        </div>
-
-        {/* Nav Sections */}
-        <nav className="p-3 space-y-6 overflow-y-auto max-h-[calc(100vh-10rem)]">
-          {navSections.map((section) => (
-            <div key={section.title} className="space-y-1">
-              {!isSidebarCollapsed && (
-                <span className="px-2 text-[10px] font-mono font-semibold text-twin-slate/70 tracking-wider uppercase">
-                  {section.title}
-                </span>
-              )}
-
-              <div className="space-y-0.5 pt-1">
-                {section.items.map((item) => {
-                  const Icon = ICONS[item.id] || LayoutDashboard;
-                  const isActive = activePage === item.id;
-
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setActivePage(item.id)}
-                      className={cn(
-                        "w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-all duration-150 group",
-                        isActive
-                          ? "bg-twin-cyan/15 text-twin-cyan font-semibold border border-twin-cyan/30 shadow-sm"
-                          : "text-twin-slate hover:text-twin-white hover:bg-twin-card/60"
-                      )}
-                      title={isSidebarCollapsed ? item.label : undefined}
-                    >
-                      <div className="flex items-center gap-2.5 truncate">
-                        <Icon
-                          className={cn(
-                            "w-4 h-4 shrink-0 transition-colors",
-                            isActive ? "text-twin-cyan" : "text-twin-slate group-hover:text-twin-white"
-                          )}
-                        />
-                        {!isSidebarCollapsed && <span className="truncate">{item.label}</span>}
-                      </div>
-
-                      {!isSidebarCollapsed && item.badge !== undefined && (
-                        <Badge variant={item.badgeVariant || "neutral"} size="sm">
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </nav>
-      </div>
-
-      {/* Footer System Status */}
-      <div className="p-3 border-t border-twin-border/60">
-        {!isSidebarCollapsed ? (
-          <div className="p-2.5 rounded-lg bg-twin-card/40 border border-twin-border/60 flex items-center justify-between text-[11px] font-mono">
-            <span className="text-twin-slate">ENVIRONMENT</span>
-            <span className="text-twin-cyan font-semibold">TEST MODE</span>
-          </div>
-        ) : (
-          <div className="w-2 h-2 rounded-full bg-twin-cyan mx-auto animate-pulse" title="TEST MODE" />
-        )}
-      </div>
-    </aside>
-  );
+  const alerts = guardianStatus?.active_alerts_count ?? 0;
+  return <aside className={cn("hidden h-screen shrink-0 flex-col border-r border-[#e2e4df] bg-white md:flex", isSidebarCollapsed ? "w-[68px]" : "w-[232px]")} aria-label="Application navigation">
+    <div className="flex h-16 items-center border-b border-[#e2e4df] px-4"><button onClick={() => setActivePage("overview")} className={cn("flex min-w-0 items-center gap-2.5 text-left", isSidebarCollapsed && "mx-auto")} aria-label="Payment Twin overview"><span className="grid size-7 shrink-0 place-items-center rounded-md bg-[#243b7a] text-xs font-semibold text-white">PT</span>{!isSidebarCollapsed && <span className="min-w-0"><span className="block truncate text-sm font-semibold tracking-[-0.02em] text-[#17211d]">Payment Twin</span><span className="block truncate text-[11px] text-[#87908a]">Merchant intelligence</span></span>}</button></div>
+    <nav className="flex-1 overflow-y-auto px-3 py-5">{groups.map((group, index) => <section key={group.label ?? "overview"} className={cn(index > 0 && "mt-6")}>{group.label && !isSidebarCollapsed && <h2 className="mb-1.5 px-2 text-[11px] font-medium text-[#87908a]">{group.label}</h2>}<div className="space-y-0.5">{group.items.map(({ id, label, icon: Icon }) => { const active = activePage === id; const hasAlert = id === "guardian" && alerts > 0; return <button key={id} onClick={() => setActivePage(id)} title={isSidebarCollapsed ? label : undefined} className={cn("group flex h-9 w-full items-center gap-2.5 rounded-md px-2 text-left text-[13px] transition-colors", active ? "bg-[#e8edfb] font-medium text-[#243b7a]" : "text-[#46514b] hover:bg-[#f0f1ee] hover:text-[#17211d]", isSidebarCollapsed && "justify-center px-0")}><Icon className="size-4 shrink-0" strokeWidth={active ? 2 : 1.8} />{!isSidebarCollapsed && <><span className="truncate">{label}</span>{hasAlert && <span className="ml-auto grid size-4 place-items-center rounded-full bg-[#b23a36] text-[10px] text-white">{alerts}</span>}</>}</button>; })}</div></section>)}</nav>
+    <div className="border-t border-[#e2e4df] p-3"><button onClick={toggleSidebar} className="flex h-8 w-full items-center gap-2 rounded-md px-2 text-xs text-[#5e6963] hover:bg-[#f0f1ee] hover:text-[#17211d]" aria-label={isSidebarCollapsed ? "Expand navigation" : "Collapse navigation"}>{isSidebarCollapsed ? <ChevronRight className="mx-auto size-4" /> : <><ChevronLeft className="size-4" /> Collapse sidebar</>}</button></div>
+  </aside>;
 };
