@@ -1,32 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useCompareScenarios } from "@/hooks/useScenarios";
 import { useDNAStatus, useDNAProfile } from "@/hooks/useDNA";
 import { useAppStore } from "@/store/useAppStore";
-import { 
-  ScenarioConfig, 
-  ScenarioIntervention 
-} from "@/types/scenario";
-import { AttributionTrail } from "@/components/domain/AttributionTrail";
-import { ProvenanceTag } from "@/components/domain/ProvenanceTag";
-import { ConfidenceGrade } from "@/components/domain/ConfidenceGrade";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { Slider } from "@/components/ui/Slider";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/Table";
-import { ErrorAlert } from "@/components/ui/ErrorAlert";
-import { 
-  FlaskConical, 
-  ShieldAlert, 
-  X, 
-  Sliders, 
-  TrendingUp, 
-  DollarSign, 
-  RotateCcw,
-  Zap,
-  Compass
-} from "lucide-react";
+import { ScenarioConfig, ScenarioIntervention } from "@/types/scenario";
 import { ScenarioParetoHandoff } from "@/types/handoff";
+import { ErrorAlert } from "@/components/ui/ErrorAlert";
+
+import { WhatIfHeader } from "./components/WhatIfHeader";
+import { BaselineReferenceStrip } from "./components/BaselineReferenceStrip";
+import { InterventionBuilder } from "./components/InterventionBuilder";
+import { ScenarioPreviewBanner } from "./components/ScenarioPreviewBanner";
+import { PairedResultsComparison } from "./components/PairedResultsComparison";
+import { CausalAttributionTrail } from "./components/CausalAttributionTrail";
+import { PaymentRailDeltasTable } from "./components/PaymentRailDeltasTable";
+import { DecisionSummaryCard } from "./components/DecisionSummaryCard";
+import { IncomingHandoffBanners } from "./components/IncomingHandoffBanners";
 
 export const ScenariosView: React.FC = () => {
   const { 
@@ -37,20 +25,20 @@ export const ScenariosView: React.FC = () => {
     setActiveScenarioParetoHandoff,
     setActivePage,
   } = useAppStore();
+
   const { data: dnaStatus } = useDNAStatus();
   const { data: dnaProfile } = useDNAProfile();
 
-  // Baseline empirical defaults from DNA
+  // Baseline empirical defaults from DNA profile
   const baselineUpiRate = dnaProfile?.success_dynamics.by_method.upi?.rate ?? 0.88;
   const baselineCardRate = dnaProfile?.success_dynamics.by_method.card?.rate ?? 0.85;
   const baselineCardMdr = dnaProfile?.fee_economics.mdr_by_method_percent.card ?? 1.85;
 
   // Controlled Intervention Levers State
-  const [upiDelta, setUpiDelta] = useState<number>(0.0); // e.g. +0.05 (+5%)
+  const [upiDelta, setUpiDelta] = useState<number>(0.05); // Default +5% for immediate insight
   const [cardDelta, setCardDelta] = useState<number>(0.0);
-  const [routingShift, setRoutingShift] = useState<number>(0.0); // % shift
-  const [maxRetries, setMaxRetries] = useState<number>(1);
-  const retryMultiplier = 1.0;
+  const [routingShift, setRoutingShift] = useState<number>(0);
+  const [maxRetries, setMaxRetries] = useState<number>(2);
   const [cardMdrRate, setCardMdrRate] = useState<number>(baselineCardMdr);
 
   // Common Simulation Settings
@@ -66,58 +54,67 @@ export const ScenariosView: React.FC = () => {
     error,
   } = useCompareScenarios();
 
-  const handleRunWhatIf = () => {
+  // Build and execute scenario comparison
+  const executeScenario = (
+    uDelta = upiDelta,
+    cDelta = cardDelta,
+    rShift = routingShift,
+    retries = maxRetries,
+    mdr = cardMdrRate,
+    pop = populationSize,
+    seed = randomSeed
+  ) => {
     const interventions: ScenarioIntervention[] = [];
 
     // 1. UPI Success Rate Intervention
-    if (upiDelta !== 0.0) {
+    if (uDelta !== 0.0) {
       interventions.push({
         intervention_type: "METHOD_SUCCESS_RATE",
         target: "upi",
         mode: "DELTA",
-        value: upiDelta,
-        description: `Shift UPI success rate by ${(upiDelta * 100).toFixed(1)}%`,
+        value: uDelta,
+        description: `Shift UPI success rate by ${(uDelta * 100).toFixed(1)}%`,
       });
     }
 
     // 2. Card Success Rate Intervention
-    if (cardDelta !== 0.0) {
+    if (cDelta !== 0.0) {
       interventions.push({
         intervention_type: "METHOD_SUCCESS_RATE",
         target: "card",
         mode: "DELTA",
-        value: cardDelta,
-        description: `Shift Card success rate by ${(cardDelta * 100).toFixed(1)}%`,
+        value: cDelta,
+        description: `Shift Card success rate by ${(cDelta * 100).toFixed(1)}%`,
       });
     }
 
     // 3. Routing Preference Shift
-    if (routingShift !== 0.0) {
+    if (rShift !== 0) {
       interventions.push({
         intervention_type: "METHOD_ROUTING_PREFERENCE",
-        target: routingShift > 0 ? "upi" : "card",
-        shift_percentage: Math.abs(routingShift),
-        description: `Shift ${Math.abs(routingShift)}% traffic toward ${routingShift > 0 ? "UPI" : "Cards"}`,
+        target: rShift > 0 ? "upi" : "card",
+        shift_percentage: Math.abs(rShift),
+        description: `Shift ${Math.abs(rShift)}% traffic toward ${rShift > 0 ? "UPI" : "Cards"}`,
       });
     }
 
     // 4. Retry Policy
-    if (maxRetries !== 1 || retryMultiplier !== 1.0) {
+    if (retries !== 1) {
       interventions.push({
         intervention_type: "RETRY_POLICY",
-        max_retries_override: maxRetries,
-        retry_propensity_multiplier: retryMultiplier,
-        description: `Retry policy: max ${maxRetries} retries with ${retryMultiplier}x propensity`,
+        max_retries_override: retries,
+        retry_propensity_multiplier: 1.0,
+        description: `Retry policy: max ${retries} retries with standard propensity`,
       });
     }
 
     // 5. Card MDR Rate
-    if (cardMdrRate !== baselineCardMdr) {
+    if (mdr !== baselineCardMdr) {
       interventions.push({
         intervention_type: "FEE_MDR_RATE",
         target: "card",
-        value: cardMdrRate,
-        description: `Card MDR rate adjusted to ${cardMdrRate}%`,
+        value: mdr,
+        description: `Card MDR rate adjusted to ${mdr.toFixed(2)}%`,
       });
     }
 
@@ -128,7 +125,7 @@ export const ScenariosView: React.FC = () => {
         target: "upi",
         mode: "DELTA",
         value: 0.03,
-        description: "Explore 3% boost in UPI capture rate",
+        description: "Explore +3% boost in UPI capture rate",
       });
     }
 
@@ -137,15 +134,33 @@ export const ScenariosView: React.FC = () => {
       scenario_name: "Counterfactual Policy Experiment",
       description: "User-configured What-If intervention evaluated against baseline under CRN",
       interventions,
-      population_size: populationSize,
-      random_seed: randomSeed,
+      population_size: pop,
+      random_seed: seed,
     };
 
     runComparison({
       scenarios: [scenario],
-      population_size: populationSize,
-      random_seed: randomSeed,
+      population_size: pop,
+      random_seed: seed,
     });
+  };
+
+  // Auto-run initial scenario comparison on mount
+  const hasAutoRun = useRef(false);
+  useEffect(() => {
+    if (!hasAutoRun.current) {
+      hasAutoRun.current = true;
+      executeScenario(0.05, 0.0, 0, 2, baselineCardMdr, 1000, 42);
+    }
+  }, [runComparison]);
+
+  const handleResetToBaseline = () => {
+    setUpiDelta(0.0);
+    setCardDelta(0.0);
+    setRoutingShift(0);
+    setMaxRetries(1);
+    setCardMdrRate(baselineCardMdr);
+    executeScenario(0.0, 0.0, 0, 1, baselineCardMdr, populationSize, randomSeed);
   };
 
   const activeComparison = compareResult?.comparisons?.[0];
@@ -171,267 +186,68 @@ export const ScenariosView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in-50 duration-200">
-      {/* Header & Meta */}
-      <div className="p-6 rounded-xl glass-panel border border-twin-border flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <FlaskConical className="w-5 h-5 text-twin-cyan" />
-            <h2 className="text-base font-display font-bold text-twin-white tracking-tight">
-              What-If Scenario Studio
-            </h2>
-            <Badge variant="cyan" size="sm">CAUSAL LAB</Badge>
-          </div>
-          <p className="text-xs text-twin-slate">
-            Change payment system levers. Simulate downstream conversion, revenue, and fee effects under Common Random Numbers (CRN).
-          </p>
-        </div>
+    <div className="space-y-4 max-w-7xl mx-auto pb-12">
+      {/* 1. COMPACT OPERATIONAL HEADER */}
+      <WhatIfHeader
+        reliabilityGrade={dnaStatus?.confidence_grade}
+        provenanceType={dnaStatus?.provenance_type}
+        baselineSampleSize={dnaStatus?.available_sample_count ?? 650}
+        isComparing={isComparing}
+        onRunScenario={() => executeScenario()}
+        onResetToBaseline={handleResetToBaseline}
+        onBackToTwin={() => setActivePage("twin")}
+      />
 
-        <div className="flex flex-wrap items-center gap-2">
-          {dnaStatus && (
-            <ConfidenceGrade
-              grade={dnaStatus.confidence_grade as any}
-              sampleSize={dnaStatus.available_sample_count}
-            />
-          )}
-          <ProvenanceTag provenance={dnaStatus?.provenance_type as any || "UNAVAILABLE"} />
-        </div>
-      </div>
+      {/* 2. INCOMING HANDOFF CONTEXT BANNERS (TWIN / GUARDIAN) */}
+      <IncomingHandoffBanners
+        twinHandoff={activeTwinScenarioHandoff}
+        onDismissTwinHandoff={() => setActiveTwinScenarioHandoff(null)}
+        guardianHandoff={activeTwinHandoff}
+        onDismissGuardianHandoff={() => setActiveTwinHandoff(null)}
+      />
 
-      {/* Twin Bottleneck Context Banner (if navigated from Payment Twin) */}
-      {activeTwinScenarioHandoff && (
-        <div className="p-4 rounded-xl border border-twin-cyan/40 bg-gradient-to-r from-twin-cyan/10 via-[#0B0F19] to-[#080B12] flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in-50">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-twin-cyan/15 border border-twin-cyan/30 text-twin-cyan">
-              <FlaskConical className="w-5 h-5" />
-            </div>
-            <div className="space-y-1 text-xs font-mono">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-twin-white uppercase tracking-wider">
-                  TWIN CONTEXT: {activeTwinScenarioHandoff.top_bottleneck.replace(/_/g, " ")}
-                </span>
-                <Badge variant="cyan" size="sm">SIMULATION BASELINE</Badge>
-              </div>
-              <p className="text-twin-slate text-[11px] font-light">
-                Observed {activeTwinScenarioHandoff.bottleneck_count} dropouts ({activeTwinScenarioHandoff.bottleneck_percent}% drag) on {activeTwinScenarioHandoff.population_size.toLocaleString()} simulated agents. Baseline Conversion: <strong className="text-twin-white">{activeTwinScenarioHandoff.baseline_conversion_rate}%</strong> | Baseline Net Revenue: <strong className="text-twin-white">₹{activeTwinScenarioHandoff.baseline_net_revenue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</strong>.
-              </p>
-            </div>
-          </div>
+      {/* 3. BASELINE CONTEXT REFERENCE STRIP */}
+      <BaselineReferenceStrip
+        handoff={activeTwinScenarioHandoff}
+        baselineKPIs={compareResult?.baseline_kpis}
+        populationSize={populationSize}
+        randomSeed={randomSeed}
+      />
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setActiveTwinScenarioHandoff(null)}
-            className="text-twin-slate hover:text-twin-white uppercase tracking-wider text-xs"
-          >
-            <X className="w-4 h-4" />
-            Dismiss
-          </Button>
-        </div>
-      )}
+      {/* 4. INTERVENTION BUILDER (LABORATORY LEVERS) */}
+      <InterventionBuilder
+        upiDelta={upiDelta}
+        onUpiDeltaChange={setUpiDelta}
+        cardDelta={cardDelta}
+        onCardDeltaChange={setCardDelta}
+        routingShift={routingShift}
+        onRoutingShiftChange={setRoutingShift}
+        maxRetries={maxRetries}
+        onMaxRetriesChange={setMaxRetries}
+        cardMdrRate={cardMdrRate}
+        onCardMdrRateChange={setCardMdrRate}
+        populationSize={populationSize}
+        onPopulationSizeChange={setPopulationSize}
+        randomSeed={randomSeed}
+        onRandomSeedChange={setRandomSeed}
+        baselineUpiRate={baselineUpiRate}
+        baselineCardRate={baselineCardRate}
+        baselineCardMdr={baselineCardMdr}
+      />
 
-      {/* Guardian Anomaly Context Banner (if navigated from Guardian) */}
-      {activeTwinHandoff && (
-        <div className="p-4 rounded-xl border border-twin-warning/40 bg-twin-warning/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in-50">
-          <div className="flex items-center gap-3">
-            <ShieldAlert className="w-5 h-5 text-twin-warning flex-shrink-0" />
-            <div className="space-y-0.5 text-xs font-mono">
-              <span className="font-bold text-twin-white uppercase">
-                GUARDIAN CONTEXT: {activeTwinHandoff.anomaly_type.replace(/_/g, " ")}
-              </span>
-              <p className="text-twin-slate text-[11px]">
-                Detected deviation on <strong>{activeTwinHandoff.target_entity.toUpperCase()}</strong> ({(activeTwinHandoff.delta * 100).toFixed(1)}% Δ). Test a counterfactual policy change below.
-              </p>
-            </div>
-          </div>
+      {/* 5. SCENARIO PREVIEW (PRE-FLIGHT CONFIGURATION) */}
+      <ScenarioPreviewBanner
+        upiDelta={upiDelta}
+        cardDelta={cardDelta}
+        routingShift={routingShift}
+        maxRetries={maxRetries}
+        cardMdrRate={cardMdrRate}
+        baselineUpiRate={baselineUpiRate}
+        baselineCardRate={baselineCardRate}
+        baselineCardMdr={baselineCardMdr}
+      />
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setActiveTwinHandoff(null)}
-            className="text-twin-slate hover:text-twin-white"
-          >
-            <X className="w-4 h-4" />
-            Dismiss
-          </Button>
-        </div>
-      )}
-
-      {/* Scenario Levers Control Panel */}
-      <Card variant="primary" className="p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-twin-border/60 pb-4">
-          <div className="space-y-1">
-            <CardTitle className="text-sm">Intervention Parameter Levers</CardTitle>
-            <CardDescription>
-              Configure policy changes. All counterfactual simulations run with Common Random Numbers (CRN) for isolated delta attribution.
-            </CardDescription>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Button
-              variant="primary"
-              size="md"
-              isLoading={isComparing}
-              disabled={!dnaStatus?.profiling_available}
-              onClick={handleRunWhatIf}
-            >
-              <FlaskConical className="w-4 h-4" />
-              Run What-If Simulation
-            </Button>
-          </div>
-        </div>
-
-        {/* 5 Laboratory Levers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Lever 1: UPI Success Rate Shift */}
-          <div className="p-4 rounded-xl bg-twin-card/50 border border-twin-border space-y-3">
-            <div className="flex justify-between items-center text-xs">
-              <span className="font-mono font-semibold text-twin-white flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 text-twin-cyan" />
-                1. UPI Success Shift
-              </span>
-              <span className="font-mono text-twin-cyan">
-                {upiDelta > 0 ? "+" : ""}{(upiDelta * 100).toFixed(1)}% Δ
-              </span>
-            </div>
-            <Slider
-              value={Math.round(upiDelta * 100)}
-              onChange={(val) => setUpiDelta(val / 100)}
-              min={-20}
-              max={20}
-              step={1}
-              unit="%"
-            />
-            <div className="flex justify-between text-[10px] font-mono text-twin-slate">
-              <span>Baseline: {(baselineUpiRate * 100).toFixed(1)}%</span>
-              <span>Scenario: {((baselineUpiRate + upiDelta) * 100).toFixed(1)}%</span>
-            </div>
-          </div>
-
-          {/* Lever 2: Card Success Rate Shift */}
-          <div className="p-4 rounded-xl bg-twin-card/50 border border-twin-border space-y-3">
-            <div className="flex justify-between items-center text-xs">
-              <span className="font-mono font-semibold text-twin-white flex items-center gap-1.5">
-                <TrendingUp className="w-3.5 h-3.5 text-twin-indigo" />
-                2. Card Success Shift
-              </span>
-              <span className="font-mono text-twin-indigo">
-                {cardDelta > 0 ? "+" : ""}{(cardDelta * 100).toFixed(1)}% Δ
-              </span>
-            </div>
-            <Slider
-              value={Math.round(cardDelta * 100)}
-              onChange={(val) => setCardDelta(val / 100)}
-              min={-20}
-              max={20}
-              step={1}
-              unit="%"
-            />
-            <div className="flex justify-between text-[10px] font-mono text-twin-slate">
-              <span>Baseline: {(baselineCardRate * 100).toFixed(1)}%</span>
-              <span>Scenario: {((baselineCardRate + cardDelta) * 100).toFixed(1)}%</span>
-            </div>
-          </div>
-
-          {/* Lever 3: Routing Preference Shift */}
-          <div className="p-4 rounded-xl bg-twin-card/50 border border-twin-border space-y-3">
-            <div className="flex justify-between items-center text-xs">
-              <span className="font-mono font-semibold text-twin-white flex items-center gap-1.5">
-                <Sliders className="w-3.5 h-3.5 text-twin-warning" />
-                3. Routing Shift (% to UPI)
-              </span>
-              <span className="font-mono text-twin-warning">
-                {routingShift > 0 ? "+" : ""}{routingShift}%
-              </span>
-            </div>
-            <Slider
-              value={routingShift}
-              onChange={setRoutingShift}
-              min={-30}
-              max={30}
-              step={5}
-              unit="%"
-            />
-            <div className="flex justify-between text-[10px] font-mono text-twin-slate">
-              <span>&larr; Favor Cards</span>
-              <span>Favor UPI &rarr;</span>
-            </div>
-          </div>
-
-          {/* Lever 4: Retry Policy */}
-          <div className="p-4 rounded-xl bg-twin-card/50 border border-twin-border space-y-3">
-            <div className="flex justify-between items-center text-xs">
-              <span className="font-mono font-semibold text-twin-white flex items-center gap-1.5">
-                <RotateCcw className="w-3.5 h-3.5 text-twin-success" />
-                4. Max Retries Limit
-              </span>
-              <span className="font-mono text-twin-success">{maxRetries} max</span>
-            </div>
-            <Slider
-              value={maxRetries}
-              onChange={setMaxRetries}
-              min={0}
-              max={4}
-              step={1}
-              unit=" retries"
-            />
-            <div className="flex justify-between text-[10px] font-mono text-twin-slate">
-              <span>0 (No retries)</span>
-              <span>4 (Aggressive)</span>
-            </div>
-          </div>
-
-          {/* Lever 5: Card MDR Rate */}
-          <div className="p-4 rounded-xl bg-twin-card/50 border border-twin-border space-y-3">
-            <div className="flex justify-between items-center text-xs">
-              <span className="font-mono font-semibold text-twin-white flex items-center gap-1.5">
-                <DollarSign className="w-3.5 h-3.5 text-twin-cyan" />
-                5. Card MDR Rate (%)
-              </span>
-              <span className="font-mono text-twin-cyan">{cardMdrRate.toFixed(2)}%</span>
-            </div>
-            <Slider
-              value={Math.round(cardMdrRate * 100)}
-              onChange={(val) => setCardMdrRate(val / 100)}
-              min={100}
-              max={350}
-              step={5}
-              unit="%"
-            />
-            <div className="flex justify-between text-[10px] font-mono text-twin-slate">
-              <span>Baseline: {baselineCardMdr.toFixed(2)}%</span>
-              <span>Delta: {(cardMdrRate - baselineCardMdr).toFixed(2)}%</span>
-            </div>
-          </div>
-
-          {/* Simulation Population Config */}
-          <div className="p-4 rounded-xl bg-twin-card/50 border border-twin-border space-y-3">
-            <div className="flex justify-between items-center text-xs">
-              <span className="font-mono font-semibold text-twin-white">Common Seed / Population</span>
-              <input
-                type="number"
-                value={randomSeed}
-                onChange={(e) => setRandomSeed(parseInt(e.target.value) || 0)}
-                className="w-16 px-1.5 py-0.5 rounded bg-twin-card border border-twin-border text-xs font-mono text-twin-cyan text-right focus:outline-none"
-              />
-            </div>
-            <Slider
-              value={populationSize}
-              onChange={setPopulationSize}
-              min={500}
-              max={3000}
-              step={250}
-              unit=" agents"
-            />
-            <div className="flex justify-between text-[10px] font-mono text-twin-slate">
-              <span>CRN Paired Simulation</span>
-              <span>{populationSize} agents</span>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Error Alert */}
+      {/* ERROR ALERTS */}
       {isError && (
         <ErrorAlert
           title="What-If Simulation Failed"
@@ -439,143 +255,30 @@ export const ScenariosView: React.FC = () => {
         />
       )}
 
-      {/* Comparison Results & Causal Attribution */}
+      {/* 6. PAIRED RESULTS COMPARISON */}
       {activeComparison && (
-        <div className="space-y-8 animate-in fade-in-50 duration-200">
-          <div className="flex items-center justify-between border-b border-twin-border/60 pb-2">
-            <h3 className="text-xs font-mono font-bold text-twin-cyan uppercase tracking-wider">
-              Comparative Impact Analysis (Baseline vs Scenario under CRN)
-            </h3>
-            <span className="text-[10px] font-mono text-twin-slate">
-              POPULATION: {populationSize} AGENTS | SEED: {randomSeed}
-            </span>
-          </div>
+        <div className="space-y-4">
+          {/* Dominant Highlight Cards + Comparative Operational Table */}
+          <PairedResultsComparison
+            comparison={activeComparison}
+            populationSize={populationSize}
+          />
 
-          {/* Comparative KPI Cards Strip */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {Object.entries(activeComparison.metric_comparisons).slice(0, 4).map(([mKey, comp]) => (
-              <div
-                key={mKey}
-                className="p-5 rounded-xl glass-panel border border-twin-border space-y-2 font-mono"
-              >
-                <span className="text-[11px] font-semibold text-twin-slate uppercase block truncate">
-                  {mKey.replace(/_/g, " ")}
-                </span>
-                <div className="flex items-baseline justify-between">
-                  <div className="text-lg font-bold text-twin-white">
-                    {mKey.includes("rate")
-                      ? `${comp.scenario_value.toFixed(1)}%`
-                      : mKey.includes("revenue") || mKey.includes("volume") || mKey.includes("fee")
-                      ? `₹${comp.scenario_value.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`
-                      : comp.scenario_value.toFixed(2)}
-                  </div>
-                  <Badge
-                    variant={comp.absolute_delta >= 0 ? "success" : "danger"}
-                    size="sm"
-                  >
-                    {comp.absolute_delta > 0 ? "+" : ""}
-                    {mKey.includes("rate")
-                      ? `${comp.absolute_delta.toFixed(1)}%`
-                      : comp.percentage_delta !== null
-                      ? `${(comp.percentage_delta ?? 0).toFixed(1)}%`
-                      : `${comp.absolute_delta.toFixed(1)}`}
-                  </Badge>
-                </div>
-                <div className="flex justify-between text-[10px] text-twin-slate border-t border-twin-border/40 pt-1.5">
-                  <span>Baseline: {mKey.includes("rate") ? `${comp.baseline_value.toFixed(1)}%` : comp.baseline_value.toLocaleString()}</span>
-                  <span>Scenario: {mKey.includes("rate") ? `${comp.scenario_value.toFixed(1)}%` : comp.scenario_value.toLocaleString()}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Causal Attribution Chain */}
+          {/* Causal Attribution Mechanism Chain */}
           {activeComparison.attribution_trail && activeComparison.attribution_trail.length > 0 && (
-            <AttributionTrail steps={activeComparison.attribution_trail} />
+            <CausalAttributionTrail steps={activeComparison.attribution_trail} />
           )}
 
-          {/* Method-Level Deltas Table */}
+          {/* Payment Rail Delta Decomposition */}
           {activeComparison.method_deltas && Object.keys(activeComparison.method_deltas).length > 0 && (
-            <Card variant="primary">
-              <CardHeader>
-                <CardTitle className="text-sm">Payment Rail Delta Breakdown</CardTitle>
-                <CardDescription>Shift in transaction volumes and conversion rates per payment method</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Payment Method</TableHead>
-                      <TableHead>Volume Shift (INR)</TableHead>
-                      <TableHead>Captured Delta</TableHead>
-                      <TableHead className="text-right">Success Rate Δ</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {Object.entries(activeComparison.method_deltas).map(([method, deltas]) => (
-                      <TableRow key={method}>
-                        <TableCell className="font-mono text-xs font-bold uppercase text-twin-white">
-                          {method}
-                        </TableCell>
-                        <TableCell className="font-mono text-xs text-twin-white">
-                          {deltas.captured_volume_delta_inr !== undefined
-                            ? `₹${deltas.captured_volume_delta_inr.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`
-                            : "—"}
-                        </TableCell>
-                        <TableCell className="font-mono text-xs text-twin-slate">
-                          {deltas.captured_count_delta !== undefined
-                            ? `${deltas.captured_count_delta > 0 ? "+" : ""}${deltas.captured_count_delta}`
-                            : "—"}
-                        </TableCell>
-                        <TableCell className="font-mono text-xs font-bold text-twin-cyan text-right">
-                          {deltas.success_rate_delta_percent !== undefined
-                            ? `${deltas.success_rate_delta_percent > 0 ? "+" : ""}${deltas.success_rate_delta_percent.toFixed(1)}%`
-                            : "—"}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+            <PaymentRailDeltasTable methodDeltas={activeComparison.method_deltas} />
           )}
 
-          {/* Contextual Workflow Bridge: What-If -> Pareto Explorer */}
-          <div className="p-4 rounded-xl border border-twin-indigo/40 bg-gradient-to-r from-twin-indigo/10 via-[#0B0F19] to-twin-card/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg shadow-twin-indigo/5">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Compass className="w-4 h-4 text-twin-indigo" />
-                <span className="text-xs font-mono font-bold text-twin-white uppercase tracking-widest">
-                  Evaluate Multi-Objective Trade-Offs in Pareto Explorer
-                </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-twin-indigo/15 border border-twin-indigo/30 text-twin-indigo font-semibold uppercase tracking-wider">
-                  OPTIMIZATION FRONTIER
-                </span>
-              </div>
-              <p className="text-[11px] text-twin-slate/90 font-light max-w-2xl">
-                This counterfactual experiment projected a{" "}
-                <strong className="text-twin-success">
-                  {(activeComparison.metric_comparisons["conversion_rate_percent"]?.absolute_delta ?? 0) >= 0 ? "+" : ""}
-                  {(activeComparison.metric_comparisons["conversion_rate_percent"]?.absolute_delta ?? 0).toFixed(1)}%
-                </strong>{" "}
-                conversion lift and{" "}
-                <strong className="text-twin-white">
-                  {(activeComparison.metric_comparisons["net_merchant_revenue_inr"]?.absolute_delta ?? 0) >= 0 ? "+₹" : "-₹"}
-                  {Math.abs(activeComparison.metric_comparisons["net_merchant_revenue_inr"]?.absolute_delta ?? 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}
-                </strong>{" "}
-                net revenue delta. Evaluate whether this operating policy is Pareto-optimal across competing objectives (revenue, conversion, fees) while respecting hard merchant constraints.
-              </p>
-            </div>
-
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleHandoffToPareto}
-              className="gap-2 font-display uppercase tracking-widest text-xs font-bold whitespace-nowrap self-start sm:self-center border-twin-indigo/40 text-twin-white hover:bg-twin-indigo/20"
-            >
-              Evaluate Trade-offs in Pareto →
-            </Button>
-          </div>
+          {/* Decision Synthesis & Pareto Handoff Card */}
+          <DecisionSummaryCard
+            comparison={activeComparison}
+            onHandoffToPareto={handleHandoffToPareto}
+          />
         </div>
       )}
     </div>
