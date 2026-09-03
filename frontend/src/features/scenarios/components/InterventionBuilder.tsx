@@ -227,12 +227,12 @@ export const InterventionBuilder: React.FC<InterventionBuilderProps> = ({
           </div>
 
           <Slider
-            value={Math.round(cardMdrRate * 100)}
-            onChange={(val) => onCardMdrRateChange(val / 100)}
-            min={80}
-            max={300}
-            step={5}
-            unit="%"
+            value={cardMdrRate}
+            onChange={(val) => onCardMdrRateChange(parseFloat(val.toFixed(2)))}
+            min={0.80}
+            max={3.00}
+            step={0.05}
+            formatValue={(val) => `${val.toFixed(2)}%`}
           />
 
           <div className="flex justify-between text-[10px] font-mono text-textTertiary pt-1 border-t border-hairline/60">
@@ -297,7 +297,7 @@ export const InterventionBuilder: React.FC<InterventionBuilderProps> = ({
           </div>
 
           <span className="text-[10px] text-textTertiary block pt-1 border-t border-hairline/60">
-            Paired execution guarantees variance reduction across counterfactual runs.
+            Paired execution under Common Random Numbers (CRN) isolates variance across counterfactual runs.
           </span>
         </div>
       </div>

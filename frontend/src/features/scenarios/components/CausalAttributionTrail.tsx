@@ -34,7 +34,7 @@ export const CausalAttributionTrail: React.FC<CausalAttributionTrailProps> = ({
           <div className="flex items-center gap-2">
             <GitCommit className="size-3.5 text-accent" strokeWidth={1.75} />
             <h3 className="text-xs font-semibold text-textPrimary tracking-tight">
-              Model-Attributed Mechanism Trail (Causal Chain)
+              Model-Attributed Mechanism Trail
             </h3>
             <span className="text-[10px] font-medium px-1.5 py-0.5 rounded border border-hairline bg-subtle text-textSecondary">
               Counterfactual Model Estimate
@@ -81,7 +81,13 @@ export const CausalAttributionTrail: React.FC<CausalAttributionTrailProps> = ({
                 </div>
 
                 <p className="text-xs text-textPrimary leading-relaxed">
-                  {step.description}
+                  {step.description
+                    .replace(/\b1\s+total\s+attempts\b/gi, "1 total attempt")
+                    .replace(/\b-1\s+total\s+attempts\b/gi, "-1 total attempt")
+                    .replace(/\b1\s+retry\s+attempts\b/gi, "1 retry attempt")
+                    .replace(/\b-1\s+retry\s+attempts\b/gi, "-1 retry attempt")
+                    .replace(/\b1\s+attempts\b/gi, "1 attempt")
+                    .replace(/\b-1\s+attempts\b/gi, "-1 attempt")}
                 </p>
               </div>
 

@@ -26,17 +26,27 @@ export const PairedResultsComparison: React.FC<PairedResultsComparisonProps> = (
   };
 
   const formatDelta = (mKey: string, abs: number) => {
-    const sign = abs > 0 ? "+" : "";
+    if (abs === 0) {
+      if (mKey.includes("rate") || mKey.includes("percent")) return "0.0 pp";
+      if (mKey.includes("volume") || mKey.includes("revenue") || mKey.includes("fee") || mKey.includes("tax") || mKey.includes("ticket")) {
+        return "₹0";
+      }
+      return "0";
+    }
+
+    const sign = abs > 0 ? "+" : "-";
+    const absVal = Math.abs(abs);
+
     if (mKey.includes("rate") || mKey.includes("percent")) {
-      return `${sign}${abs.toFixed(1)} pp`;
+      return `${sign}${absVal.toFixed(1)} pp`;
     }
     if (mKey.includes("volume") || mKey.includes("revenue") || mKey.includes("fee") || mKey.includes("tax") || mKey.includes("ticket")) {
-      return `${sign}₹${Math.abs(abs).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
+      return `${sign}₹${absVal.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
     }
     if (mKey.includes("attempts_per_success")) {
-      return `${sign}${abs.toFixed(2)}x`;
+      return `${sign}${absVal.toFixed(2)}x`;
     }
-    return `${sign}${abs.toFixed(0)}`;
+    return `${sign}${absVal.toFixed(0)}`;
   };
 
   // Determine if a delta is commercially favorable
@@ -46,8 +56,8 @@ export const PairedResultsComparison: React.FC<PairedResultsComparisonProps> = (
     if (
       mKey.includes("failure") ||
       mKey.includes("abandonment") ||
-      mKey.includes("fees") ||
-      mKey.includes("taxes") ||
+      mKey.includes("fee") ||
+      mKey.includes("tax") ||
       mKey.includes("lost_volume") ||
       mKey.includes("attempts_per_success")
     ) {
@@ -74,7 +84,7 @@ export const PairedResultsComparison: React.FC<PairedResultsComparisonProps> = (
             </span>
           </div>
           <p className="text-xs text-textSecondary">
-            Mathematical delta across identical pseudo-random seeds, guaranteeing that observed shifts stem directly from the modelled policy intervention.
+            Mathematical delta across identical pseudo-random seeds; paired simulation isolates the modelled intervention effect.
           </p>
         </div>
 

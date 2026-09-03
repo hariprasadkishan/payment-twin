@@ -9,6 +9,7 @@ export interface SliderProps {
   step?: number;
   label?: string;
   unit?: string;
+  formatValue?: (val: number) => string;
   className?: string;
   disabled?: boolean;
 }
@@ -21,6 +22,7 @@ export const Slider: React.FC<SliderProps> = ({
   step = 1,
   label,
   unit = "",
+  formatValue,
   className,
   disabled = false,
 }) => {
@@ -28,12 +30,11 @@ export const Slider: React.FC<SliderProps> = ({
 
   return (
     <div className={cn("space-y-2", className)}>
-      {(label || unit) && (
+      {(label || unit || formatValue) && (
         <div className="flex items-center justify-between text-xs">
-          {label && <span className="font-medium text-twin-slate">{label}</span>}
-          <span className="font-mono font-semibold text-twin-cyan">
-            {value}
-            {unit}
+          {label && <span className="font-medium text-textSecondary">{label}</span>}
+          <span className="font-mono font-semibold text-textPrimary">
+            {formatValue ? formatValue(value) : `${value}${unit}`}
           </span>
         </div>
       )}

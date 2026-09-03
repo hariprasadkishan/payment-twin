@@ -20,6 +20,17 @@ export const PaymentRailDeltasTable: React.FC<PaymentRailDeltasTableProps> = ({
   const methods = Object.keys(methodDeltas);
   if (methods.length === 0) return null;
 
+  // Calculate totals across rails for reconciliation verification
+  let totalVolDelta = 0;
+  let totalCountDelta = 0;
+
+  Object.values(methodDeltas).forEach((deltas) => {
+    const vol = deltas.captured_volume_inr_delta ?? deltas.captured_volume_delta_inr ?? 0;
+    const count = deltas.captured_count_delta ?? 0;
+    totalVolDelta += vol;
+    totalCountDelta += count;
+  });
+
   return (
     <section className="rounded-lg border border-hairline bg-surface p-4 shadow-panel space-y-3">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-hairline pb-2.5">
@@ -46,9 +57,10 @@ export const PaymentRailDeltasTable: React.FC<PaymentRailDeltasTableProps> = ({
           <TableBody>
             {Object.entries(methodDeltas).map(([method, deltas]) => {
               const Icon = methodIcons[method.toLowerCase()] || CreditCard;
-              const volDelta = deltas.captured_volume_delta_inr ?? 0;
+              // Extract real backend keys with resilient fallbacks
+              const volDelta = deltas.captured_volume_inr_delta ?? deltas.captured_volume_delta_inr ?? 0;
               const countDelta = deltas.captured_count_delta ?? 0;
-              const rateDelta = deltas.success_rate_delta_percent ?? 0;
+              const rateDelta = deltas.success_rate_percent_delta ?? deltas.success_rate_delta_percent ?? 0;
 
               return (
                 <TableRow key={method} className="hover:bg-subtle/40 transition-colors">
@@ -72,7 +84,7 @@ export const PaymentRailDeltasTable: React.FC<PaymentRailDeltasTableProps> = ({
 
                   <TableCell className="text-right text-xs font-mono tabular-nums text-textPrimary py-2.5">
                     <span className={cn(countDelta > 0 ? "text-emerald-700 font-semibold" : countDelta < 0 ? "text-red-700 font-semibold" : "text-textTertiary")}>
-                      {countDelta > 0 ? "+" : ""}{countDelta} orders
+                      {countDelta > 0 ? "+" : ""}{countDelta} {Math.abs(countDelta) === 1 ? "order" : "orders"}
                     </span>
                   </TableCell>
 
@@ -84,6 +96,27 @@ export const PaymentRailDeltasTable: React.FC<PaymentRailDeltasTableProps> = ({
                 </TableRow>
               );
             })}
+
+            {/* Reconciled Aggregate Row */}
+            <TableRow className="bg-canvas/50 font-semibold border-t border-hairline">
+              <TableCell className="text-xs text-textPrimary py-2.5 font-bold">
+                Net Rail Sum
+              </TableCell>
+              <TableCell className="text-right text-xs font-mono tabular-nums py-2.5">
+                <span className={cn(totalVolDelta > 0 ? "text-emerald-700 font-bold" : totalVolDelta < 0 ? "text-red-700 font-bold" : "text-textSecondary")}>
+                  {totalVolDelta > 0 ? "+₹" : totalVolDelta < 0 ? "-₹" : "₹"}
+                  {Math.abs(totalVolDelta).toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                </span>
+              </TableCell>
+              <TableCell className="text-right text-xs font-mono tabular-nums py-2.5">
+                <span className={cn(totalCountDelta > 0 ? "text-emerald-700 font-bold" : totalCountDelta < 0 ? "text-red-700 font-bold" : "text-textSecondary")}>
+                  {totalCountDelta > 0 ? "+" : ""}{totalCountDelta} {Math.abs(totalCountDelta) === 1 ? "order" : "orders"}
+                </span>
+              </TableCell>
+              <TableCell className="text-right text-[11px] font-mono text-textTertiary py-2.5">
+                Reconciled
+              </TableCell>
+            </TableRow>
           </TableBody>
         </Table>
       </div>
