@@ -17,26 +17,29 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
 }) => {
   return (
     <div
+      role="alert"
       className={cn(
-        "p-4 rounded-xl border border-twin-danger/30 bg-twin-danger/10 text-twin-white flex items-start gap-3 text-left",
+        "p-4 rounded-md border border-red-200 bg-red-50/80 text-textPrimary flex items-start gap-3 text-left shadow-panel",
         className
       )}
     >
-      <AlertTriangle className="w-5 h-5 text-twin-danger shrink-0 mt-0.5" />
+      <AlertTriangle className="size-4 text-semantic-danger shrink-0 mt-0.5" strokeWidth={1.75} />
       <div className="space-y-1 flex-1">
-        <h4 className="text-xs font-semibold text-twin-danger font-mono tracking-wide uppercase">
+        <h4 className="text-xs font-semibold text-semantic-danger tracking-tight">
           {title}
         </h4>
-        <p className="text-xs text-twin-slate leading-relaxed">{message}</p>
+        <p className="text-xs text-textSecondary leading-relaxed">{message}</p>
         {onRetry && (
           <button
+            type="button"
             onClick={onRetry}
-            className="text-xs font-medium text-twin-danger underline hover:text-twin-danger/80 pt-1"
+            className="text-xs font-semibold text-semantic-danger hover:underline pt-1 focus:outline-none focus-visible:ring-1"
           >
-            Retry request
+            Retry operation →
           </button>
         )}
       </div>
     </div>
   );
 };
+

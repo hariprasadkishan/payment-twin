@@ -30,9 +30,10 @@ export const TabsList: React.FC<{ className?: string; children: React.ReactNode 
   return (
     <div
       className={cn(
-        "inline-flex items-center p-1 rounded-lg bg-twin-card/80 border border-twin-border text-twin-slate",
+        "inline-flex items-center p-0.5 rounded-md bg-subtle border border-hairline text-textSecondary select-none",
         className
       )}
+      role="tablist"
     >
       {children}
     </div>
@@ -52,12 +53,14 @@ export const TabsTrigger: React.FC<{
   return (
     <button
       type="button"
+      role="tab"
+      aria-selected={isActive}
       onClick={() => ctx.onValueChange(value)}
       className={cn(
-        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-150 focus-visible:outline-none",
+        "inline-flex items-center justify-center whitespace-nowrap rounded px-3 py-1 text-xs font-medium transition-all duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-accent",
         isActive
-          ? "bg-twin-cyan/15 text-twin-cyan border border-twin-cyan/30 shadow-sm"
-          : "text-twin-slate hover:text-twin-white hover:bg-twin-card/50",
+          ? "bg-surface text-textPrimary shadow-sm font-semibold"
+          : "text-textSecondary hover:text-textPrimary hover:bg-surface/50",
         className
       )}
     >
@@ -76,5 +79,10 @@ export const TabsContent: React.FC<{
 
   if (ctx.value !== value) return null;
 
-  return <div className={cn("focus-visible:outline-none", className)}>{children}</div>;
+  return (
+    <div role="tabpanel" tabIndex={0} className={cn("focus-visible:outline-none", className)}>
+      {children}
+    </div>
+  );
 };
+

@@ -8,38 +8,54 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "primary", size = "md", isLoading = false, children, disabled, ...props }, ref) => {
+  (
+    {
+      className,
+      variant = "primary",
+      size = "md",
+      isLoading = false,
+      children,
+      disabled,
+      type = "button",
+      ...props
+    },
+    ref
+  ) => {
     const baseStyles =
-      "inline-flex items-center justify-center rounded-md font-sans font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#243b7a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f7f5] disabled:pointer-events-none disabled:opacity-50";
+      "inline-flex items-center justify-center whitespace-nowrap rounded-md font-sans text-xs font-medium tracking-tight transition-all duration-150 select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] active:translate-y-[0.5px]";
 
     const variants = {
       primary:
-        "border border-[#243b7a] bg-[#243b7a] font-semibold text-white hover:bg-[#1c3066]",
+        "border border-accent bg-accent font-semibold text-white shadow-sm hover:bg-accent-hover hover:border-accent-hover active:bg-accent-hover",
       secondary:
-        "border border-[#d1d5ce] bg-white text-[#17211d] hover:bg-[#f7f7f5]",
+        "border border-hairline bg-surface text-textPrimary shadow-sm hover:bg-subtle hover:border-borderStrong active:bg-canvas",
       ghost:
-        "bg-transparent text-[#5e6963] hover:bg-[#f0f1ee] hover:text-[#17211d]",
+        "bg-transparent text-textSecondary hover:bg-subtle hover:text-textPrimary active:bg-canvas",
       danger:
-        "border border-[#f0c9c6] bg-[#fbeceb] text-[#b23a36] hover:bg-[#f8dfdd]",
+        "border border-red-200 bg-red-50 text-semantic-danger font-semibold hover:bg-red-100 hover:border-red-300 active:bg-red-200",
       outline:
-        "border border-[#aeb9dc] bg-transparent text-[#243b7a] hover:bg-[#e8edfb]",
+        "border border-borderStrong bg-transparent text-accent hover:bg-accent-subtle hover:border-accent active:bg-accent-subtle",
     };
 
     const sizes = {
-      sm: "text-xs px-2.5 py-1.5 gap-1.5",
-      md: "text-sm px-4 py-2 gap-2",
-      lg: "text-base px-5 py-2.5 gap-2.5",
+      sm: "h-7 px-2.5 text-[11px] gap-1.5",
+      md: "h-8 px-3.5 text-xs gap-2",
+      lg: "h-9 px-4 text-sm gap-2.5",
     };
 
     return (
       <button
         ref={ref}
+        type={type}
         className={cn(baseStyles, variants[variant], sizes[size], className)}
         disabled={disabled || isLoading}
         {...props}
       >
         {isLoading && (
-          <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+          <span
+            className="size-3.5 border-2 border-current border-t-transparent rounded-full animate-spin shrink-0"
+            aria-hidden="true"
+          />
         )}
         {children}
       </button>
@@ -47,3 +63,4 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   }
 );
 Button.displayName = "Button";
+

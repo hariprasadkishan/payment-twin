@@ -4,30 +4,87 @@
 
 @layer base {
   :root {
-    --bg-canvas: #f7f7f5; --bg-raised: #ffffff; --bg-subtle: #f0f1ee;
-    --line-hairline: #e2e4df; --line-strong: #d1d5ce;
-    --text-primary: #17211d; --text-secondary: #5e6963; --text-tertiary: #87908a;
-    --accent-primary: #243b7a; --accent-primary-hover: #1c3066; --accent-subtle: #e8edfb;
-    --semantic-success: #237b4b; --semantic-warning: #946619; --semantic-danger: #b23a36;
-    /* Existing features use these semantic aliases. */
-    --twin-bg: var(--bg-canvas); --twin-card: var(--bg-raised); --twin-border: var(--line-hairline);
-    --twin-cyan: var(--accent-primary); --twin-indigo: #455ca4; --twin-white: var(--text-primary);
-    --twin-slate: var(--text-secondary); --twin-tertiary: var(--text-tertiary);
-    --twin-success: var(--semantic-success); --twin-warning: var(--semantic-warning); --twin-danger: var(--semantic-danger);
+    --bg-canvas: #f8f9fa;
+    --bg-surface: #ffffff;
+    --bg-subtle: #f1f3f5;
+    --line-hairline: #e5e7eb;
+    --line-strong: #d1d5db;
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --text-tertiary: #9ca3af;
+    --accent-primary: #1e3a8a;
+    --accent-primary-hover: #172554;
+    --accent-subtle: #eff6ff;
+    --semantic-success: #059669;
+    --semantic-warning: #d97706;
+    --semantic-danger: #dc2626;
+    --semantic-info: #2563eb;
+
+    /* Semantic aliases for backwards compatibility with existing feature views */
+    --twin-bg: var(--bg-canvas);
+    --twin-card: var(--bg-surface);
+    --twin-border: var(--line-hairline);
+    --twin-cyan: var(--accent-primary);
+    --twin-indigo: var(--semantic-info);
+    --twin-white: var(--text-primary);
+    --twin-slate: var(--text-secondary);
+    --twin-tertiary: var(--text-tertiary);
+    --twin-success: var(--semantic-success);
+    --twin-warning: var(--semantic-warning);
+    --twin-danger: var(--semantic-danger);
   }
 
-  * { border-color: var(--line-hairline); }
-  html { background: var(--bg-canvas); }
-  body { margin: 0; min-width: 320px; background: var(--bg-canvas); color: var(--text-primary); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
-  button, input, select, textarea { font: inherit; }
-  :focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
-  .tabular-nums { font-variant-numeric: tabular-nums; }
+  * {
+    border-color: var(--line-hairline);
+  }
+
+  html {
+    background: var(--bg-canvas);
+    color-scheme: light;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    background: var(--bg-canvas);
+    color: var(--text-primary);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  button, input, select, textarea {
+    font: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 @layer components {
-  .app-panel { @apply rounded-lg border bg-white shadow-panel; }
-  .app-section-title { @apply text-sm font-semibold tracking-[-0.01em] text-[#17211d]; }
-  .app-eyebrow { @apply text-[11px] font-medium text-[#5e6963]; }
-  .glass-panel { @apply border bg-white shadow-panel; }
-  .glass-panel-hover { @apply transition-colors hover:border-[#d1d5ce]; }
+  .app-panel {
+    @apply rounded-lg border border-hairline bg-white shadow-panel;
+  }
+  .app-section-title {
+    @apply text-sm font-semibold tracking-[-0.01em] text-textPrimary;
+  }
+  .app-eyebrow {
+    @apply text-[11px] font-medium uppercase tracking-wider text-textSecondary;
+  }
+  .glass-panel {
+    @apply rounded-lg border border-hairline bg-white shadow-panel;
+  }
+  .glass-panel-hover {
+    @apply transition-colors hover:border-borderStrong;
+  }
 }
+

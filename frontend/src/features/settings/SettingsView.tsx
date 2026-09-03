@@ -2,7 +2,7 @@ import React from "react";
 import { 
   Database, 
   Key, 
-  CheckCircle, 
+  CheckCircle2, 
   AlertCircle, 
   RefreshCw, 
   Sparkles, 
@@ -33,60 +33,60 @@ export const SettingsView: React.FC = () => {
   );
 
   return (
-    <div className="space-y-6 animate-in fade-in-50 duration-200 max-w-4xl">
-      {/* Razorpay Connection Card */}
-      <div className="p-6 rounded-xl glass-panel border border-twin-border space-y-4">
-        <div className="flex items-center justify-between border-b border-twin-border/60 pb-4">
+    <div className="space-y-5 max-w-4xl pb-12">
+      {/* 1. Razorpay Connection Card */}
+      <div className="rounded-lg border border-hairline bg-surface p-5 shadow-panel space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-hairline/60 pb-3.5">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-twin-cyan/10 border border-twin-cyan/20 text-twin-cyan">
-              <Key className="w-5 h-5" />
+            <div className="p-2 rounded-md bg-blue-50 border border-blue-200 text-accent">
+              <Key className="size-4" strokeWidth={1.75} />
             </div>
             <div>
-              <h3 className="text-sm font-display font-semibold text-twin-white">
-                Razorpay API Test Mode
+              <h3 className="text-xs font-semibold text-textPrimary tracking-tight">
+                Razorpay API Test Mode Connection
               </h3>
-              <p className="text-xs text-twin-slate">
-                API Key credentials and connection status from backend environment.
+              <p className="text-xs text-textSecondary">
+                API Key credentials and merchant synchronization state from environment configuration.
               </p>
             </div>
           </div>
           {isConnLoading ? (
             <Skeleton className="h-6 w-24" />
           ) : (
-            <Badge variant={connection?.connected ? "cyan" : "warning"} size="md">
+            <Badge variant={connection?.connected ? "success" : "warning"} size="md">
               {connection?.status?.toUpperCase() || (connection?.connected ? "CONNECTED" : "UNAVAILABLE")}
             </Badge>
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
-          <div className="p-3 rounded-lg bg-twin-card/50 border border-twin-border/60 space-y-1">
-            <span className="text-twin-slate">Connection Status:</span>
-            <div className="text-twin-white font-semibold flex items-center gap-1.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+          <div className="p-3 rounded-md bg-canvas/50 border border-hairline space-y-1">
+            <span className="text-textTertiary text-[11px] font-sans">Connection Status:</span>
+            <div className="text-textPrimary font-semibold flex items-center gap-1.5">
               {connection?.connected ? (
                 <>
-                  <CheckCircle className="w-3.5 h-3.5 text-twin-success" />
-                  <span>{connection?.message || "Razorpay Test Mode Connected"}</span>
+                  <CheckCircle2 className="size-3.5 text-emerald-600 shrink-0" />
+                  <span className="truncate">{connection?.message || "Razorpay Test Mode Connected"}</span>
                 </>
               ) : (
                 <>
-                  <AlertCircle className="w-3.5 h-3.5 text-twin-warning" />
-                  <span>{connection?.message || "Not Connected / Credentials Missing"}</span>
+                  <AlertCircle className="size-3.5 text-amber-600 shrink-0" />
+                  <span className="truncate">{connection?.message || "Not Connected / Missing Credentials"}</span>
                 </>
               )}
             </div>
           </div>
-          <div className="p-3 rounded-lg bg-twin-card/50 border border-twin-border/60 space-y-1">
-            <span className="text-twin-slate">Live Observed Records:</span>
-            <div className="text-twin-white font-semibold">
+          <div className="p-3 rounded-md bg-canvas/50 border border-hairline space-y-1">
+            <span className="text-textTertiary text-[11px] font-sans">Live Observed Records:</span>
+            <div className="text-textPrimary font-semibold">
               {connection?.sample_count != null && connection.sample_count > 0
-                ? `${connection.sample_count} Records Found`
+                ? `${connection.sample_count.toLocaleString()} Records Synced`
                 : "0 Records (Empty Test Account)"}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 pt-2">
+        <div className="flex items-center gap-2.5 pt-1">
           <Button
             variant="secondary"
             size="sm"
@@ -96,8 +96,8 @@ export const SettingsView: React.FC = () => {
               refetchDatasets();
             }}
           >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Test Connection
+            <RefreshCw className="size-3.5" />
+            <span>Test Connection</span>
           </Button>
           <Button
             variant="primary"
@@ -105,37 +105,37 @@ export const SettingsView: React.FC = () => {
             isLoading={isIngesting}
             onClick={() => triggerIngest({ count: 100 })}
           >
-            Sync Test Payments
+            <span>Sync Test Payments</span>
           </Button>
         </div>
       </div>
 
-      {/* Synthetic Benchmark Demonstration Card */}
-      <div className="p-6 rounded-xl glass-panel border border-twin-border space-y-4">
-        <div className="flex items-center justify-between border-b border-twin-border/60 pb-4">
+      {/* 2. Synthetic Benchmark Foundation Card */}
+      <div className="rounded-lg border border-hairline bg-surface p-5 shadow-panel space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-hairline/60 pb-3.5">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-twin-warning/10 border border-twin-warning/20 text-twin-warning">
-              <Sparkles className="w-5 h-5" />
+            <div className="p-2 rounded-md bg-indigo-50 border border-indigo-200 text-accent">
+              <Sparkles className="size-4" strokeWidth={1.75} />
             </div>
             <div>
-              <h3 className="text-sm font-display font-semibold text-twin-white">
+              <h3 className="text-xs font-semibold text-textPrimary tracking-tight">
                 Demonstration Synthetic Benchmark Foundation
               </h3>
-              <p className="text-xs text-twin-slate">
-                Statistically realistic payment population for evaluating Twin & Optimization capabilities.
+              <p className="text-xs text-textSecondary">
+                Statistically realistic payment population for evaluating simulation and optimization capabilities.
               </p>
             </div>
           </div>
-          <Badge variant={hasBenchmarkDataset ? "warning" : "neutral"} size="md">
-            {hasBenchmarkDataset ? "SYNTHETIC BENCHMARK ACTIVE" : "STANDBY"}
+          <Badge variant={hasBenchmarkDataset ? "indigo" : "neutral"} size="md">
+            {hasBenchmarkDataset ? "BENCHMARK ACTIVE" : "STANDBY"}
           </Badge>
         </div>
 
-        <p className="text-xs text-twin-slate leading-relaxed">
+        <p className="text-xs text-textSecondary leading-relaxed">
           Because your Razorpay Test Mode account currently contains 0 live transactions, you can load a canonical retail e-commerce benchmark dataset. All downstream Behavioral DNA, Customer Agents, Twin simulations, What-If scenarios, and Pareto frontiers derived from this dataset are <strong>strictly labeled as SYNTHETIC BENCHMARK DATA</strong> with zero live Razorpay misrepresentation.
         </p>
 
-        <div className="flex items-center gap-3 pt-2">
+        <div className="flex items-center gap-2.5 pt-1">
           {!hasBenchmarkDataset ? (
             <Button
               variant="primary"
@@ -143,8 +143,8 @@ export const SettingsView: React.FC = () => {
               isLoading={isBenchmarkLoading}
               onClick={() => loadBenchmark()}
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              Load Synthetic Benchmark Dataset (650 Records)
+              <Sparkles className="size-3.5" />
+              <span>Load Synthetic Benchmark Dataset (650 Records)</span>
             </Button>
           ) : (
             <Button
@@ -152,78 +152,83 @@ export const SettingsView: React.FC = () => {
               size="sm"
               isLoading={isBenchmarkClearing}
               onClick={() => clearBenchmark()}
-              className="text-twin-danger hover:bg-twin-danger/10"
+              className="text-semantic-danger hover:bg-red-50"
             >
-              <Trash2 className="w-3.5 h-3.5" />
-              Clear Benchmark Dataset
+              <Trash2 className="size-3.5" />
+              <span>Clear Benchmark Dataset</span>
             </Button>
           )}
         </div>
       </div>
 
-      {/* Dataset Repository & Auditing Card */}
-      <div className="p-6 rounded-xl glass-panel border border-twin-border space-y-4">
-        <div className="flex items-center justify-between border-b border-twin-border/60 pb-4">
+      {/* 3. Dataset Repository & Provenance Log Card */}
+      <div className="rounded-lg border border-hairline bg-surface p-5 shadow-panel space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-hairline/60 pb-3.5">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-twin-indigo/10 border border-twin-indigo/20 text-twin-indigo">
-              <Database className="w-5 h-5" />
+            <div className="p-2 rounded-md bg-subtle border border-hairline text-textSecondary">
+              <Database className="size-4" strokeWidth={1.75} />
             </div>
             <div>
-              <h3 className="text-sm font-display font-semibold text-twin-white">
+              <h3 className="text-xs font-semibold text-textPrimary tracking-tight">
                 Dataset Repository & Provenance Log
               </h3>
-              <p className="text-xs text-twin-slate">
-                Sanitized JSONL payment records stored in local dataset foundation.
+              <p className="text-xs text-textSecondary">
+                Sanitized JSONL payment records stored in local dataset repository.
               </p>
             </div>
           </div>
           {isDatasetsLoading ? (
             <Skeleton className="h-6 w-24" />
           ) : (
-            <Badge variant="neutral" size="md">
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium border border-hairline bg-canvas text-textSecondary">
               {datasetList?.total_datasets ?? 0} DATASETS
-            </Badge>
+            </span>
           )}
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-mono text-twin-slate">
-          <ShieldCheck className="w-4 h-4 text-twin-success" />
+        <div className="flex items-center gap-2 text-xs font-mono text-textSecondary bg-canvas/50 p-2.5 rounded border border-hairline">
+          <ShieldCheck className="size-3.5 text-emerald-600 shrink-0" />
           <span>Privacy Guarantee: Zero customer PII (emails, phone numbers, card PANs) is ever logged or processed.</span>
         </div>
 
         {/* Dataset files table */}
         {datasetList && datasetList.datasets && datasetList.datasets.length > 0 ? (
-          <div className="pt-2">
+          <div className="pt-1 overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Filename</TableHead>
-                  <TableHead>Records</TableHead>
+                <TableRow className="bg-canvas/50">
+                  <TableHead className="w-56">Filename</TableHead>
+                  <TableHead className="text-right w-24">Records</TableHead>
                   <TableHead>Provenance Type</TableHead>
-                  <TableHead>File Size</TableHead>
-                  <TableHead className="text-right">Status</TableHead>
+                  <TableHead className="text-right w-24">File Size</TableHead>
+                  <TableHead className="text-right w-24">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {datasetList.datasets.map((d) => {
                   const isSynth = d.filename.toLowerCase().includes("benchmark") || d.filename.toLowerCase().includes("synthetic");
                   return (
-                    <TableRow key={d.filename}>
-                      <TableCell className="font-mono text-xs text-twin-cyan truncate max-w-xs">
-                        {d.filename}
+                    <TableRow key={d.filename} className="hover:bg-subtle/50 transition-colors">
+                      <TableCell className="py-2.5">
+                        <span
+                          className="block font-mono text-xs font-semibold text-accent truncate max-w-[160px] sm:max-w-[220px] md:max-w-xs lg:max-w-sm"
+                          title={d.filename}
+                        >
+                          {d.filename}
+                        </span>
                       </TableCell>
-                      <TableCell className="font-mono text-xs text-twin-white">
-                        {d.valid_records}
+                      <TableCell className="text-right font-mono text-xs text-textPrimary py-2.5 tabular-nums">
+                        {d.valid_records.toLocaleString()}
                       </TableCell>
-                      <TableCell>
-                        <Badge variant={isSynth ? "warning" : "cyan"} size="sm">
+                      <TableCell className="py-2.5">
+                        <Badge variant={isSynth ? "indigo" : "success"} size="sm">
                           {isSynth ? "SYNTHETIC BENCHMARK" : "OBSERVED RAZORPAY"}
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-mono text-xs text-twin-slate">
+                      <TableCell className="text-right font-mono text-xs text-textSecondary py-2.5 tabular-nums">
                         {(d.file_size_bytes / 1024).toFixed(1)} KB
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right py-2.5">
                         <Badge variant={d.is_valid ? "success" : "danger"} size="sm">
                           {d.is_valid ? "VALID" : "CORRUPT"}
                         </Badge>
@@ -235,7 +240,7 @@ export const SettingsView: React.FC = () => {
             </Table>
           </div>
         ) : (
-          <div className="p-4 rounded-lg bg-twin-card/30 border border-twin-border/50 text-xs font-mono text-twin-slate text-center">
+          <div className="p-6 rounded-md bg-canvas/40 border border-hairline text-xs font-mono text-textTertiary text-center">
             No local JSONL dataset files present. Load synthetic benchmark or sync live payments to begin.
           </div>
         )}

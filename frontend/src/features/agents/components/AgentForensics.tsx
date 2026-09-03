@@ -161,7 +161,7 @@ export const AgentForensics: React.FC<AgentForensicsProps> = ({
                     ₹{agent.observed_preferences.transaction_amount_inr.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
                   </TableCell>
                   <TableCell className="tabular-nums text-textSecondary">
-                    {agent.latent_parameters.max_retries} attempts
+                    {agent.latent_parameters.max_retries} {agent.latent_parameters.max_retries === 1 ? "attempt" : "attempts"}
                   </TableCell>
                   <TableCell className="tabular-nums font-medium text-textPrimary">
                     {(agent.latent_parameters.retry_propensity * 100).toFixed(0)}%

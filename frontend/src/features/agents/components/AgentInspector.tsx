@@ -154,7 +154,9 @@ export const AgentInspector: React.FC<AgentInspectorProps> = ({ agent, onClose }
             </div>
             <div className="flex justify-between items-center">
               <span className="text-textTertiary">Max Allowed Retries:</span>
-              <span className="font-medium text-textPrimary tabular-nums">{agent.latent_parameters.max_retries} attempts</span>
+              <span className="font-medium text-textPrimary tabular-nums">
+                {agent.latent_parameters.max_retries} {agent.latent_parameters.max_retries === 1 ? "attempt" : "attempts"}
+              </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-textTertiary">Patience Timeout:</span>
