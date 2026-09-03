@@ -1,5 +1,14 @@
 import React from "react";
-import { ArrowRight, BarChart3, Clock3, Database, Dna, Percent, RefreshCw, ShieldAlert, WalletCards } from "lucide-react";
+import {
+  ArrowRight,
+  BarChart3,
+  Bot,
+  Database,
+  Dna,
+  ShieldAlert,
+  Sparkles,
+  WalletCards,
+} from "lucide-react";
 import { useDNAProfile, useDNAStatus } from "@/hooks/useDNA";
 import { useIngestPayments, useLoadBenchmark } from "@/hooks/useDatasets";
 import { useAppStore } from "@/store/useAppStore";
@@ -7,46 +16,177 @@ import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { DNASummaryRibbon } from "./components/DNASummaryRibbon";
+import { DNAPaymentMethodSurface } from "./components/DNAPaymentMethodSurface";
+import { DNAAmountDistribution } from "./components/DNAAmountDistribution";
+import { DNARetryAndTemporal } from "./components/DNARetryAndTemporal";
+import { DNAFailureDiagnostics } from "./components/DNAFailureDiagnostics";
 
-const money = (n?: number | null) => n == null ? "—" : new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
-const pct = (n?: number | null, digits = 1) => n == null ? "—" : `${(n * 100).toFixed(digits)}%`;
-const num = (n?: number | null) => n == null ? "—" : new Intl.NumberFormat("en-IN").format(n);
-const methodColors = ["#243b7a", "#455ca4", "#7292c9", "#8e9b95", "#b08b48"];
+const formatNumber = (n?: number | null) =>
+  n == null ? "—" : new Intl.NumberFormat("en-IN").format(n);
 
 export const DNAView: React.FC = () => {
   const { isLoading: statusLoading } = useDNAStatus();
-  const { data: profile, isLoading: profileLoading, isError, error, refetch } = useDNAProfile();
+  const {
+    data: profile,
+    isLoading: profileLoading,
+    isError,
+    error,
+    refetch,
+  } = useDNAProfile();
   const { mutate: ingest, isPending: ingesting } = useIngestPayments();
   const { mutate: benchmark, isPending: benchmarkLoading } = useLoadBenchmark();
   const { setActivePage } = useAppStore();
-  if (statusLoading || profileLoading) return <div className="space-y-5"><Skeleton className="h-28 rounded-lg" /><Skeleton className="h-72 rounded-lg" /><Skeleton className="h-80 rounded-lg" /></div>;
-  if (isError) return <ErrorAlert title="Behavioral DNA is unavailable" message={(error as Error)?.message || "The profile could not be loaded."} onRetry={() => refetch()} />;
-  if (!profile || profile.status === "empty" || profile.provenance.total_sample_size === 0) return <div className="space-y-6"><EmptyState icon={Dna} title="No behavioral profile yet" description="Behavioral DNA needs payment records to calculate method priors, capture confidence intervals, amount distributions, and retry associations." actionLabel={ingesting ? "Syncing payments…" : "Sync test payments"} onAction={() => ingest({ count: 100 })} secondaryActionLabel={benchmarkLoading ? "Loading benchmark…" : "Load synthetic benchmark"} onSecondaryAction={() => benchmark()} /><div className="grid gap-5 md:grid-cols-3"><InfoBlock icon={WalletCards} title="Payment mix" text="Understand which payment methods customers choose across your ticket sizes." /><InfoBlock icon={BarChart3} title="Success dynamics" text="Compare capture rates and confidence intervals across payment rails and banks." /><InfoBlock icon={ShieldAlert} title="Failure patterns" text="Identify recurring error sources and observed retry behavior." /></div></div>;
 
-  const methods = Object.entries(profile.method_priors.probabilities || {}).sort(([, a], [, b]) => b - a);
-  const success = profile.success_dynamics;
-  const amount = profile.amount_distribution;
-  const failures = profile.failure_diagnostics;
-  const transitions = profile.empirical_transitions;
-  const fee = profile.fee_economics;
-  const temporal = profile.temporal_dynamics;
-  return <div className="space-y-6 pb-10">
-    <section className="flex flex-col gap-4 border-b border-[#e2e4df] pb-5 sm:flex-row sm:items-end sm:justify-between"><div><div className="flex items-center gap-2 text-xs text-[#5e6963]"><Dna className="size-4 text-[#243b7a]" />Profile v{profile.dna_version}<span>·</span><span>{num(profile.provenance.total_sample_size)} records</span></div><h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#17211d]">Your payment behavior, measured</h2><p className="mt-1 max-w-2xl text-sm leading-6 text-[#5e6963]">This empirical profile is the statistical prior used to generate Customer Agents and initialize Payment Twin simulations.</p></div><Button size="sm" onClick={() => setActivePage("agents")}><span>Inspect Customer Agents</span><ArrowRight className="size-4" /></Button></section>
+  if (statusLoading || profileLoading) {
+    return (
+      <div className="space-y-8">
+        <Skeleton className="h-16 w-1/3 rounded-md" />
+        <Skeleton className="h-20 w-full rounded-lg" />
+        <Skeleton className="h-80 w-full rounded-lg" />
+        <Skeleton className="h-64 w-full rounded-lg" />
+      </div>
+    );
+  }
 
-    <section className="grid grid-cols-2 divide-x divide-y divide-[#e2e4df] overflow-hidden rounded-lg border border-[#e2e4df] bg-white sm:grid-cols-4"><Metric label="Profile sample" value={num(profile.provenance.total_sample_size)} detail={profile.provenance.data_source_type === "SYNTHETIC_BENCHMARK_DATA" ? "Synthetic benchmark" : "Observed Razorpay"} /><Metric label="Overall capture" value={pct(success.overall_success_rate)} detail={success.sample_size ? `${num(success.sample_size)} attempts` : "No sample size"} /><Metric label="Confidence grade" value={profile.reliability.confidence_grade} detail={`${(profile.reliability.confidence_score * 100).toFixed(0)}% reliability score`} /><Metric label="Observed timespan" value={temporal.timespan_days ? `${temporal.timespan_days} days` : "Single period"} detail={temporal.has_sufficient_timespan ? "Temporal analysis available" : "Limited temporal coverage"} /></section>
+  if (isError) {
+    return (
+      <ErrorAlert
+        title="Behavioral DNA is unavailable"
+        message={(error as Error)?.message || "The empirical profile could not be loaded."}
+        onRetry={() => refetch()}
+      />
+    );
+  }
 
-    <section className="grid gap-5 lg:grid-cols-12"><div className="border border-[#e2e4df] bg-white lg:col-span-7"><PanelHeader icon={WalletCards} title="Payment method mix" description="Empirical method priors in the current profile." /><div className="p-5"><div className="mb-6 flex h-3 overflow-hidden rounded-full bg-[#f0f1ee]">{methods.map(([method, value], i) => <div key={method} style={{ width: `${value * 100}%`, backgroundColor: methodColors[i % methodColors.length] }} title={`${method}: ${pct(value)}`} />)}</div><div className="divide-y divide-[#e2e4df]">{methods.map(([method, value], i) => { const metric = success.by_method?.[method]; return <div key={method} className="grid grid-cols-[1fr_auto_auto] items-center gap-5 py-3 text-sm"><span className="flex items-center gap-2 font-medium capitalize"><span className="size-2 rounded-full" style={{ backgroundColor: methodColors[i % methodColors.length] }} />{method}</span><span className="tabular-nums text-[#5e6963]">{pct(value)}</span><span className="tabular-nums font-medium text-[#17211d]">{metric ? `${pct(metric.rate)} capture` : "No capture rate"}</span></div>; })}</div></div></div><div className="border border-[#e2e4df] bg-white lg:col-span-5"><PanelHeader icon={Percent} title="Rail capture rates" description="Observed success with confidence intervals." /><div className="divide-y divide-[#e2e4df] p-5">{methods.map(([method]) => { const metric = success.by_method?.[method]; return <div key={method} className="py-3 first:pt-0 last:pb-0"><div className="flex items-center justify-between text-sm"><span className="font-medium capitalize">{method}</span><span className="font-semibold tabular-nums text-[#237b4b]">{metric ? pct(metric.rate) : "—"}</span></div><div className="mt-2 h-1.5 rounded-full bg-[#f0f1ee]"><div className="h-full rounded-full bg-[#237b4b]" style={{ width: `${Math.max(0, Math.min(100, (metric?.rate || 0) * 100))}%` }} /></div>{metric?.ci_95 && <p className="mt-1 text-[11px] text-[#87908a]">95% interval {pct(metric.ci_95[0])} – {pct(metric.ci_95[1])} · n={num(metric.sample_size)}</p>}</div>; })}</div></div></section>
+  if (
+    !profile ||
+    profile.status === "empty" ||
+    profile.provenance.total_sample_size === 0
+  ) {
+    return (
+      <div className="space-y-8">
+        <EmptyState
+          icon={Dna}
+          title="No behavioral profile yet"
+          description="Behavioral DNA requires payment records to calculate empirical method priors, Wilson capture confidence intervals, ticket quantiles, and retry transition matrices."
+          actionLabel={ingesting ? "Syncing payments…" : "Sync test payments"}
+          onAction={() => ingest({ count: 100 })}
+          secondaryActionLabel={
+            benchmarkLoading ? "Loading benchmark…" : "Load synthetic benchmark"
+          }
+          onSecondaryAction={() => benchmark()}
+        />
+        <div className="grid gap-6 md:grid-cols-3">
+          <div className="rounded-lg border border-hairline bg-surface p-5 shadow-panel space-y-2">
+            <WalletCards className="size-5 text-accent" />
+            <h3 className="text-sm font-semibold text-textPrimary">Payment Mix Priors</h3>
+            <p className="text-xs text-textSecondary leading-relaxed">
+              Understand which checkout methods customers choose across varied order values.
+            </p>
+          </div>
+          <div className="rounded-lg border border-hairline bg-surface p-5 shadow-panel space-y-2">
+            <BarChart3 className="size-5 text-accent" />
+            <h3 className="text-sm font-semibold text-textPrimary">Success Dynamics</h3>
+            <p className="text-xs text-textSecondary leading-relaxed">
+              Compare capture rates with analytical 95% Wilson confidence intervals across rails.
+            </p>
+          </div>
+          <div className="rounded-lg border border-hairline bg-surface p-5 shadow-panel space-y-2">
+            <ShieldAlert className="size-5 text-accent" />
+            <h3 className="text-sm font-semibold text-textPrimary">Friction Diagnostics</h3>
+            <p className="text-xs text-textSecondary leading-relaxed">
+              Identify recurring failure sources, dropoff stages, and empirical retry behavior.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-    <section className="grid gap-5 lg:grid-cols-12"><div className="border border-[#e2e4df] bg-white lg:col-span-7"><PanelHeader icon={BarChart3} title="Transaction value distribution" description="Observed ticket-size statistics and empirical quantiles." /><div className="p-5"><div className="grid grid-cols-2 gap-4 sm:grid-cols-4">{[["Mean", amount.summary?.mean], ["Median", amount.summary?.median], ["P75", amount.quantiles.p75], ["P95", amount.quantiles.p95]].map(([label, value]) => <div key={label as string}><p className="text-xs text-[#5e6963]">{label}</p><p className="mt-1 text-lg font-semibold tabular-nums">{money(value as number)}</p></div>)}</div><div className="mt-7"><div className="flex items-center justify-between text-xs text-[#5e6963]"><span>Ticket value spectrum</span><span>n={num(amount.sample_size)}</span></div><div className="relative mt-4 h-2 rounded-full bg-[#e8edfb]">{Object.entries(amount.quantiles).map(([key, value]) => { const max = amount.quantiles.p99 || value || 1; return <span key={key} title={`${key}: ${money(value)}`} className="absolute top-1/2 size-3 -translate-y-1/2 rounded-full border-2 border-white bg-[#243b7a]" style={{ left: `${Math.min(98, Math.max(2, value / max * 100))}%` }} />; })}</div><div className="mt-2 flex justify-between text-[11px] text-[#87908a]"><span>Lower value</span><span>P99 {money(amount.quantiles.p99)}</span></div></div></div></div><div className="border border-[#e2e4df] bg-white lg:col-span-5"><PanelHeader icon={RefreshCw} title="Retry behavior" description="Empirical transitions from multi-attempt orders." /><dl className="divide-y divide-[#e2e4df] px-5">{[["Retry after failure", pct(transitions.overall_retry_probability_on_failure)], ["Method switch on retry", pct(transitions.method_switch_on_retry_probability)], ["Tracked orders", num(transitions.tracked_orders_count)], ["Multi-attempt orders", num(transitions.multi_attempt_orders_count)]].map(([label, value]) => <div key={label as string} className="flex items-center justify-between py-3 text-sm"><dt className="text-[#5e6963]">{label}</dt><dd className="font-medium tabular-nums">{value}</dd></div>)}</dl><p className="border-t border-[#e2e4df] p-5 text-xs leading-5 text-[#5e6963]">{transitions.unobserved_dropouts_note}</p></div></section>
+  return (
+    <div className="space-y-8 pb-12">
+      {/* 1. COMPACT OPERATIONAL HEADER */}
+      <section className="flex flex-col justify-between gap-4 border-b border-hairline pb-6 sm:flex-row sm:items-end">
+        <div>
+          <span className="text-[10px] font-mono uppercase tracking-wider text-textTertiary font-semibold flex items-center gap-1.5">
+            <Dna className="size-3 text-accent" />
+            <span>Behavioral DNA · Profile v{profile.dna_version}</span>
+          </span>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-textPrimary">
+            Behavioral DNA
+          </h1>
+          <p className="mt-1 text-xs text-textSecondary max-w-2xl leading-relaxed">
+            Learned statistical priors, empirical distributions, and transition dynamics calibrated
+            from {formatNumber(profile.provenance.total_sample_size)} payment records.
+          </p>
+        </div>
 
-    <section className="grid gap-5 lg:grid-cols-12"><div className="border border-[#e2e4df] bg-white lg:col-span-7"><PanelHeader icon={ShieldAlert} title="Failure diagnostics" description="Where unsuccessful payment attempts were observed." /><div className="grid gap-6 p-5 sm:grid-cols-2"><DistributionList title="Error sources" values={failures.error_source_distribution} /><DistributionList title="Error steps" values={failures.error_step_distribution} /></div></div><div className="border border-[#e2e4df] bg-white lg:col-span-5"><PanelHeader icon={Clock3} title="Coverage and economics" description="Context for interpreting the profile." /><dl className="divide-y divide-[#e2e4df] px-5"><Row label="Blended MDR" value={fee.has_fee_data ? `${fee.effective_blended_mdr_percent?.toFixed(2)}%` : "Unavailable"} /><Row label="Effective tax rate" value={fee.has_fee_data ? `${fee.effective_tax_rate_percent?.toFixed(2)}%` : "Unavailable"} /><Row label="Peak hours (UTC)" value={temporal.peak_hours_utc.length ? temporal.peak_hours_utc.join(", ") : "Unavailable"} /><Row label="Data source" value={profile.provenance.data_source_type === "SYNTHETIC_BENCHMARK_DATA" ? "Synthetic benchmark" : "Observed Razorpay"} /></dl></div></section>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button variant="secondary" size="sm" onClick={() => setActivePage("agents")}>
+            <Bot className="size-3.5" />
+            <span>Inspect Customer Agents</span>
+          </Button>
+          <Button variant="primary" size="sm" onClick={() => setActivePage("twin")}>
+            <Sparkles className="size-3.5" />
+            <span>Open Payment Twin</span>
+          </Button>
+        </div>
+      </section>
 
-    <section className="flex flex-col gap-4 border border-[#d6dcf0] bg-[#eef1fa] p-5 sm:flex-row sm:items-center sm:justify-between"><div className="flex gap-3"><Database className="mt-0.5 size-5 shrink-0 text-[#243b7a]" /><div><h2 className="text-sm font-semibold">Profile ready for simulation</h2><p className="mt-1 text-xs leading-5 text-[#5e6963]">Customer Agents will sample method preference, ticket size, retry tolerance, and payment friction from these empirical priors.</p></div></div><Button variant="outline" size="sm" onClick={() => setActivePage("twin")}>Open Payment Twin <ArrowRight className="size-4" /></Button></section>
-  </div>;
+      {/* 2. PRIMARY DNA SUMMARY RIBBON */}
+      <DNASummaryRibbon profile={profile} />
+
+      {/* 3. DOMINANT ANALYTICAL SURFACE: PAYMENT METHOD BEHAVIOUR */}
+      <section aria-label="Payment Method Behavior Surface">
+        <DNAPaymentMethodSurface profile={profile} />
+      </section>
+
+      {/* 4. SECONDARY ANALYTICAL SURFACE: TRANSACTION AMOUNT DISTRIBUTION */}
+      <section aria-label="Transaction Value Distribution">
+        <DNAAmountDistribution profile={profile} />
+      </section>
+
+      {/* 5. BEHAVIOUR PATTERNS & RETRY DYNAMICS */}
+      <section aria-label="Retry Dynamics and Temporal Priors">
+        <DNARetryAndTemporal profile={profile} />
+      </section>
+
+      {/* 6. FAILURE & FRICTION DIAGNOSTICS */}
+      <section aria-label="Failure Diagnostics">
+        <DNAFailureDiagnostics profile={profile} />
+      </section>
+
+      {/* 7. "WHY THIS MATTERS" / PAYMENT TWIN HANDOFF BRIDGE */}
+      <section className="rounded-lg border border-hairline bg-surface p-6 sm:p-8 shadow-panel flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div className="flex items-start gap-4 max-w-2xl">
+          <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-blue-50 text-accent ring-1 ring-blue-100">
+            <Database className="size-5" />
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-bold text-textPrimary tracking-tight">
+                Empirical Priors Ready for Simulation
+              </h2>
+              <span className="text-[10px] font-mono px-2 py-0.2 rounded bg-emerald-50 text-semantic-success font-semibold border border-emerald-200">
+                Calibrated
+              </span>
+            </div>
+            <p className="text-xs text-textSecondary leading-relaxed">
+              Customer Agents sample checkout patience, ticket size, rail preference, and friction
+              tolerance directly from these learned distributions. Test fee interventions and routing
+              policies in Payment Twin.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 shrink-0">
+          <Button variant="primary" size="md" onClick={() => setActivePage("twin")}>
+            <span>Simulate in Payment Twin</span>
+            <ArrowRight className="size-4" />
+          </Button>
+        </div>
+      </section>
+    </div>
+  );
 };
-
-const Metric: React.FC<{ label: string; value: string; detail: string }> = ({ label, value, detail }) => <div className="min-w-0 p-4 sm:p-5"><p className="text-xs text-[#5e6963]">{label}</p><p className="mt-2 truncate text-xl font-semibold tracking-[-0.03em] tabular-nums">{value}</p><p className="mt-1 truncate text-[11px] text-[#87908a]">{detail}</p></div>;
-const PanelHeader: React.FC<{ icon: React.ElementType; title: string; description: string }> = ({ icon: Icon, title, description }) => <div className="flex items-start gap-3 border-b border-[#e2e4df] px-5 py-4"><Icon className="mt-0.5 size-4 shrink-0 text-[#243b7a]" /><div><h2 className="text-sm font-semibold tracking-[-0.01em]">{title}</h2><p className="mt-0.5 text-xs text-[#5e6963]">{description}</p></div></div>;
-const InfoBlock: React.FC<{ icon: React.ElementType; title: string; text: string }> = ({ icon: Icon, title, text }) => <div className="border border-[#e2e4df] bg-white p-5"><Icon className="size-5 text-[#243b7a]" /><h3 className="mt-4 text-sm font-semibold">{title}</h3><p className="mt-1 text-xs leading-5 text-[#5e6963]">{text}</p></div>;
-const Row: React.FC<{ label: string; value: string }> = ({ label, value }) => <div className="flex items-center justify-between gap-4 py-3 text-sm"><dt className="text-[#5e6963]">{label}</dt><dd className="text-right font-medium tabular-nums">{value}</dd></div>;
-const DistributionList: React.FC<{ title: string; values: Record<string, number> }> = ({ title, values }) => { const entries = Object.entries(values || {}).sort(([, a], [, b]) => b - a).slice(0, 5); const total = entries.reduce((s, [, n]) => s + n, 0) || 1; return <div><h3 className="text-xs font-medium text-[#5e6963]">{title}</h3><div className="mt-3 space-y-3">{entries.length ? entries.map(([name, value]) => <div key={name}><div className="flex justify-between text-xs"><span className="capitalize">{name.replace(/_/g, " ")}</span><span className="tabular-nums text-[#5e6963]">{num(value)}</span></div><div className="mt-1 h-1.5 rounded-full bg-[#f0f1ee]"><div className="h-full rounded-full bg-[#b23a36]" style={{ width: `${value / total * 100}%` }} /></div></div>) : <p className="text-xs text-[#87908a]">No failure observations available.</p>}</div></div>; };
