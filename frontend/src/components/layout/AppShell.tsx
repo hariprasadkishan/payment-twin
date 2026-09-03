@@ -29,14 +29,14 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     : currentProvenance) as ProvenanceType;
 
   return (
-    <div className="flex min-h-screen bg-canvas text-textPrimary">
+    <div className="flex min-h-screen bg-canvas text-textPrimary antialiased selection:bg-accent-subtle selection:text-accent">
       {/* Desktop & Tablet Sidebar */}
       <Sidebar />
 
       {/* Main Content Workspace Area */}
       <div className="min-w-0 flex-1 flex flex-col">
         <TopNav />
-        <main className="mx-auto w-full max-w-[1440px] px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-7 flex-1">
+        <main className="mx-auto w-full max-w-[1440px] px-6 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-8 flex-1 min-w-0">
           <ProvenanceBanner
             provenance={provenance}
             sampleSize={dnaStatus?.available_sample_count ?? 0}
@@ -47,4 +47,3 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     </div>
   );
 };
-

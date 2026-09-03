@@ -4,28 +4,45 @@
 
 @layer base {
   :root {
+    /* Ledgerix-inspired Light Canvas & Clean White Surfaces */
     --bg-canvas: #f8f9fa;
     --bg-surface: #ffffff;
     --bg-subtle: #f1f3f5;
-    --line-hairline: #e5e7eb;
-    --line-strong: #d1d5db;
-    --text-primary: #111827;
-    --text-secondary: #4b5563;
-    --text-tertiary: #9ca3af;
+    --bg-elevated: #ffffff;
+    --line-hairline: #e2e8f0;
+    --line-strong: #cbd5e1;
+
+    /* High-contrast Slate/Charcoal Typography */
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-tertiary: #94a3b8;
+
+    /* Brand Accent: Restrained Deep Navy & Electric Indigo */
     --accent-primary: #1e3a8a;
     --accent-primary-hover: #172554;
+    --accent-electric: #2563eb;
     --accent-subtle: #eff6ff;
+
+    /* Semantic Financial Indicators (Genuine data states only) */
     --semantic-success: #059669;
     --semantic-warning: #d97706;
     --semantic-danger: #dc2626;
     --semantic-info: #2563eb;
 
-    /* Semantic aliases for backwards compatibility with existing feature views */
+    /* Selective Dark Cockpit Tokens (For Simulation Cockpit & Quick Search) */
+    --cockpit-canvas: #0b0f17;
+    --cockpit-surface: #111726;
+    --cockpit-subtle: #1a2234;
+    --cockpit-border: #1f293d;
+    --cockpit-text: #f8fafc;
+    --cockpit-text-muted: #94a3b8;
+
+    /* Backwards compatibility aliases */
     --twin-bg: var(--bg-canvas);
     --twin-card: var(--bg-surface);
     --twin-border: var(--line-hairline);
     --twin-cyan: var(--accent-primary);
-    --twin-indigo: var(--semantic-info);
+    --twin-indigo: var(--accent-electric);
     --twin-white: var(--text-primary);
     --twin-slate: var(--text-secondary);
     --twin-tertiary: var(--text-tertiary);
@@ -41,6 +58,7 @@
   html {
     background: var(--bg-canvas);
     color-scheme: light;
+    scroll-behavior: smooth;
   }
 
   body {
@@ -49,6 +67,7 @@
     background: var(--bg-canvas);
     color: var(--text-primary);
     font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     font-size: 14px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
@@ -61,7 +80,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--accent-primary);
+    outline: 2px solid var(--accent-electric);
     outline-offset: 2px;
   }
 
@@ -72,19 +91,15 @@
 
 @layer components {
   .app-panel {
-    @apply rounded-lg border border-hairline bg-white shadow-panel;
+    @apply rounded-lg border border-hairline bg-surface shadow-panel;
   }
   .app-section-title {
     @apply text-sm font-semibold tracking-[-0.01em] text-textPrimary;
   }
   .app-eyebrow {
-    @apply text-[11px] font-medium uppercase tracking-wider text-textSecondary;
+    @apply text-[10px] font-mono uppercase tracking-wider text-textTertiary;
   }
-  .glass-panel {
-    @apply rounded-lg border border-hairline bg-white shadow-panel;
-  }
-  .glass-panel-hover {
-    @apply transition-colors hover:border-borderStrong;
+  .cockpit-panel {
+    @apply rounded-lg border border-cockpit-border bg-cockpit-surface text-cockpit-text shadow-panel;
   }
 }
-

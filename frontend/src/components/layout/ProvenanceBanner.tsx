@@ -26,7 +26,7 @@ export const ProvenanceBanner: React.FC<ProvenanceBannerProps> = ({
           text: `Calibrated against ${
             sampleSize > 0 ? `${sampleSize.toLocaleString()} verified merchant transactions` : "verified merchant transactions"
           } from Razorpay Test Mode (Behavioral DNA v${dnaVersion}).`,
-          tone: "text-emerald-800 bg-emerald-50/80 border-emerald-200",
+          tone: "text-emerald-900 bg-emerald-50/60 border-emerald-200/80",
           iconTone: "text-emerald-600",
           badgeTone: "bg-emerald-100 text-emerald-800 border-emerald-300",
         };
@@ -38,9 +38,9 @@ export const ProvenanceBanner: React.FC<ProvenanceBannerProps> = ({
           text: `${
             sampleSize > 0 ? `${sampleSize.toLocaleString()} calibrated payment records` : "Benchmark records"
           } power this model. Forward simulation outputs are probabilistic projections, not observed historical facts.`,
-          tone: "text-blue-900 bg-blue-50/70 border-blue-200",
-          iconTone: "text-blue-600",
-          badgeTone: "bg-blue-100 text-blue-800 border-blue-300",
+          tone: "text-blue-950 bg-blue-50/50 border-blue-200/80",
+          iconTone: "text-accent",
+          badgeTone: "bg-blue-100/80 text-accent border-blue-200",
         };
       case "MIXED_DERIVED":
         return {
@@ -48,9 +48,9 @@ export const ProvenanceBanner: React.FC<ProvenanceBannerProps> = ({
           label: "Simulation Projection",
           badge: "Synthetic Derived",
           text: "Forward conversion estimates are synthesized from the customer agent population and active scenario assumptions.",
-          tone: "text-indigo-950 bg-indigo-50/60 border-indigo-200",
+          tone: "text-indigo-950 bg-indigo-50/50 border-indigo-200/80",
           iconTone: "text-indigo-600",
-          badgeTone: "bg-indigo-100 text-indigo-800 border-indigo-300",
+          badgeTone: "bg-indigo-100/80 text-indigo-800 border-indigo-200",
         };
       default:
         return {
@@ -71,7 +71,7 @@ export const ProvenanceBanner: React.FC<ProvenanceBannerProps> = ({
     <aside
       aria-label="Data provenance notice"
       className={cn(
-        "mb-5 flex items-start gap-3 rounded-md border px-3.5 py-2.5 text-xs transition-colors",
+        "mb-6 flex items-start gap-3 rounded-md border px-4 py-2.5 text-xs transition-colors",
         content.tone,
         className
       )}
@@ -83,7 +83,7 @@ export const ProvenanceBanner: React.FC<ProvenanceBannerProps> = ({
       </div>
       <span
         className={cn(
-          "hidden sm:inline-flex shrink-0 items-center rounded border px-1.5 py-0.5 text-[10px] font-medium tracking-tight",
+          "hidden sm:inline-flex shrink-0 items-center rounded border px-1.5 py-0.5 text-[10px] font-mono font-medium tracking-tight",
           content.badgeTone
         )}
       >
@@ -92,4 +92,3 @@ export const ProvenanceBanner: React.FC<ProvenanceBannerProps> = ({
     </aside>
   );
 };
-

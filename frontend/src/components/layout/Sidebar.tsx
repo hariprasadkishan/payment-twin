@@ -77,7 +77,7 @@ export const Sidebar: React.FC = () => {
           )}
           aria-label="Payment Twin Overview"
         >
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent text-white shadow-sm font-semibold text-xs tracking-tight">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent text-white shadow-xs font-bold text-xs tracking-tight">
             PT
           </div>
           {!isSidebarCollapsed && (
@@ -87,7 +87,7 @@ export const Sidebar: React.FC = () => {
                   Payment Twin
                 </span>
               </div>
-              <span className="block truncate text-[11px] text-textTertiary mt-0.5 leading-none">
+              <span className="block truncate text-[10px] font-mono text-textTertiary mt-1 uppercase tracking-wider leading-none">
                 Merchant Intelligence
               </span>
             </div>
@@ -100,7 +100,7 @@ export const Sidebar: React.FC = () => {
         {groups.map((group, index) => (
           <section key={group.label ?? `group-${index}`}>
             {group.label && !isSidebarCollapsed && (
-              <h2 className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider text-textTertiary">
+              <h2 className="mb-1.5 px-2 text-[10px] font-mono font-semibold uppercase tracking-wider text-textTertiary">
                 {group.label}
               </h2>
             )}
@@ -115,13 +115,16 @@ export const Sidebar: React.FC = () => {
                     onClick={() => setActivePage(id)}
                     title={isSidebarCollapsed ? label : undefined}
                     className={cn(
-                      "group relative flex h-8 w-full items-center gap-2.5 rounded-md px-2.5 text-left text-[13px] font-medium transition-colors",
+                      "group relative flex h-[34px] w-full items-center gap-2.5 rounded-md px-2.5 text-left text-[13px] font-medium transition-colors",
                       active
-                        ? "bg-accent-subtle text-accent font-semibold"
-                        : "text-textSecondary hover:bg-subtle hover:text-textPrimary",
+                        ? "bg-blue-50/80 text-accent font-semibold"
+                        : "text-textSecondary hover:bg-subtle/70 hover:text-textPrimary",
                       isSidebarCollapsed && "justify-center px-0 h-9"
                     )}
                   >
+                    {active && !isSidebarCollapsed && (
+                      <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r bg-accent" />
+                    )}
                     <Icon
                       className={cn(
                         "size-4 shrink-0 transition-colors",
@@ -156,7 +159,7 @@ export const Sidebar: React.FC = () => {
       {/* System Status & Collapse Toggle Footer */}
       <div className="border-t border-hairline p-2.5 space-y-2">
         {!isSidebarCollapsed && (
-          <div className="flex items-center justify-between px-2 py-1 text-[11px] text-textTertiary">
+          <div className="flex items-center justify-between px-2 py-1 text-[11px] text-textTertiary font-mono">
             <span className="flex items-center gap-1.5">
               <span
                 className={cn(
@@ -185,7 +188,7 @@ export const Sidebar: React.FC = () => {
           ) : (
             <>
               <ChevronLeft className="size-4" />
-              <span className="flex-1 text-left">Collapse sidebar</span>
+              <span className="flex-1 text-left text-[11px]">Collapse sidebar</span>
             </>
           )}
         </button>
@@ -193,4 +196,3 @@ export const Sidebar: React.FC = () => {
     </aside>
   );
 };
-

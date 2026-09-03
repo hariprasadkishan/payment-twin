@@ -69,21 +69,21 @@ export const TopNav: React.FC = () => {
   const provenanceBadge = React.useMemo(() => {
     switch (currentProvenance) {
       case "OBSERVED_RAZORPAY_DATA":
-        return { label: "Razorpay Test", tone: "bg-emerald-50 text-emerald-700 border-emerald-200" };
+        return { label: "Razorpay Test", tone: "bg-emerald-50/80 text-emerald-800 border-emerald-200" };
       case "SYNTHETIC_BENCHMARK_DATA":
-        return { label: "Synthetic Benchmark", tone: "bg-blue-50 text-blue-700 border-blue-200" };
+        return { label: "Synthetic Benchmark", tone: "bg-blue-50/80 text-accent border-blue-200" };
       case "MIXED_DERIVED":
-        return { label: "Derived Model", tone: "bg-indigo-50 text-indigo-700 border-indigo-200" };
+        return { label: "Derived Model", tone: "bg-indigo-50/80 text-indigo-800 border-indigo-200" };
       default:
-        return { label: "Test Sandbox", tone: "bg-gray-100 text-gray-600 border-gray-200" };
+        return { label: "Test Sandbox", tone: "bg-subtle text-textSecondary border-hairline" };
     }
   }, [currentProvenance]);
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center justify-between border-b border-hairline bg-surface/95 px-4 backdrop-blur-sm sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center justify-between border-b border-hairline bg-surface/90 px-6 sm:px-8 lg:px-12 backdrop-blur-sm">
       {/* Breadcrumb and Page Title */}
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 text-[11px] font-medium text-textTertiary">
+        <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-textTertiary">
           <span className="hover:text-textSecondary transition-colors">Payment Twin</span>
           <span aria-hidden="true">/</span>
           <span>{meta.section}</span>
@@ -91,12 +91,12 @@ export const TopNav: React.FC = () => {
           <span className="text-textSecondary font-semibold">{meta.title}</span>
         </div>
         <div className="flex items-center gap-3 mt-0.5">
-          <h1 className="truncate text-base font-semibold tracking-tight text-textPrimary">
+          <h1 className="truncate text-base font-bold tracking-tight text-textPrimary">
             {meta.title}
           </h1>
           <span
             className={cn(
-              "hidden sm:inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-medium tracking-tight",
+              "hidden sm:inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-mono font-medium tracking-tight",
               provenanceBadge.tone
             )}
           >
@@ -126,13 +126,13 @@ export const TopNav: React.FC = () => {
         <button
           type="button"
           onClick={() => setIsSearchOpen(true)}
-          className="hidden h-8 items-center gap-2 rounded-md border border-hairline bg-canvas/60 px-2.5 text-xs text-textTertiary transition-colors hover:bg-subtle hover:text-textPrimary hover:border-borderStrong active:bg-canvas lg:flex cursor-pointer select-none"
+          className="hidden h-8 items-center gap-2 rounded-md border border-hairline bg-canvas/70 px-2.5 text-xs text-textTertiary transition-colors hover:bg-subtle hover:text-textPrimary hover:border-borderStrong active:bg-canvas lg:flex cursor-pointer select-none"
           aria-label="Quick search workspaces (⌘K)"
           title="Quick search workspaces and features (⌘K / Ctrl+K)"
         >
           <Search className="size-3.5 text-textTertiary" />
           <span>Quick search...</span>
-          <kbd className="ml-3 rounded border border-hairline bg-surface px-1 py-0.2 font-mono text-[9px] text-textSecondary shadow-xs">
+          <kbd className="ml-3 rounded border border-hairline bg-surface px-1.5 py-0.2 font-mono text-[9px] text-textSecondary shadow-xs">
             ⌘K
           </kbd>
         </button>
@@ -173,14 +173,14 @@ export const TopNav: React.FC = () => {
         {/* Merchant Workspace Avatar / Switcher */}
         <div className="flex items-center gap-2 pl-1">
           <div
-            className="grid size-7 place-items-center rounded-md bg-accent-subtle text-accent text-xs font-bold ring-1 ring-accent/10"
+            className="grid size-7 place-items-center rounded-md bg-blue-50 text-accent text-xs font-bold ring-1 ring-blue-200"
             title="Merchant: Test Merchant Account"
           >
             M
           </div>
           <div className="hidden xl:block text-left text-xs leading-none">
             <span className="block font-medium text-textPrimary">Merchant Sandbox</span>
-            <span className="block text-[10px] text-textTertiary mt-0.5">INR • Razorpay</span>
+            <span className="block text-[10px] font-mono text-textTertiary mt-0.5">INR • Razorpay</span>
           </div>
         </div>
       </div>
@@ -190,4 +190,3 @@ export const TopNav: React.FC = () => {
     </header>
   );
 };
-
