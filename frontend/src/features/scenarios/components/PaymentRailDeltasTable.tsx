@@ -35,12 +35,21 @@ export const PaymentRailDeltasTable: React.FC<PaymentRailDeltasTableProps> = ({
     <section className="rounded-lg border border-hairline bg-surface p-4 shadow-panel space-y-3">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-hairline pb-2.5">
         <div className="space-y-0.5">
-          <h3 className="text-xs font-semibold text-textPrimary tracking-tight">
-            Payment Rail Delta Decomposition
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-xs font-semibold text-textPrimary tracking-tight">
+              Payment Rail Delta Decomposition
+            </h3>
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded border border-hairline bg-subtle text-textSecondary">
+              Rail Attribution
+            </span>
+          </div>
           <p className="text-xs text-textSecondary">
-            Simulated shift in transaction volume, captured orders, and authorization success rates partitioned by payment rail.
+            Answers: <strong className="text-textPrimary font-semibold">Which payment rail caused the overall change?</strong> Decomposes captured volume, order counts, and success rates.
           </p>
+        </div>
+
+        <div className="text-[11px] font-mono text-textTertiary">
+          4 Empirical Rails Evaluated
         </div>
       </div>
 

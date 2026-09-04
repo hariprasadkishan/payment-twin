@@ -25,67 +25,78 @@ export const WhatIfHeader: React.FC<WhatIfHeaderProps> = ({
   onBackToTwin,
 }) => {
   return (
-    <div className="flex flex-col md:flex-row md:items-start justify-between gap-3 border-b border-hairline pb-3">
-      {/* Title & Concise Product Definition */}
-      <div className="space-y-0.5 max-w-2xl">
-        <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold text-textPrimary tracking-tight">
-            What-If Studio
+    <div className="space-y-2 border-b border-hairline pb-4">
+      {/* Top Row: Eyebrow, Badges, and Action Buttons */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-textTertiary">
+              WHAT-IF STUDIO
+            </span>
+            <span className="text-textTertiary text-xs">•</span>
+            <ConfidenceGrade
+              grade={reliabilityGrade as GradeType}
+              sampleSize={baselineSampleSize}
+            />
+            <ProvenanceTag
+              provenance={provenanceType as ProvenanceType}
+              sampleSize={baselineSampleSize}
+            />
+          </div>
+
+          <h1 className="text-2xl font-bold tracking-tight text-textPrimary">
+            Counterfactual payment policy
           </h1>
-          <span className="text-textTertiary text-xs">•</span>
-          <span className="text-[11px] font-semibold text-accent uppercase tracking-wider">
-            Counterfactual Laboratory
-          </span>
+
+          <p className="text-xs text-textSecondary max-w-2xl leading-relaxed">
+            Change one payment behavior at a time and simulate the expected business impact.
+          </p>
         </div>
-        <p className="text-xs text-textSecondary leading-normal">
-          Evaluate hypothetical payment routing shifts, authorization success improvements, and retry overrides against the empirical baseline under Common Random Numbers (CRN).
-        </p>
+
+        {/* Header Action Controls */}
+        <div className="flex items-center gap-2 self-start sm:self-center shrink-0 flex-wrap">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBackToTwin}
+            className="text-xs text-textSecondary hover:text-textPrimary gap-1.5 shadow-none"
+          >
+            <ArrowLeft className="size-3.5" />
+            <span>Back to Twin</span>
+          </Button>
+
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onResetToBaseline}
+            className="text-xs gap-1.5 shadow-xs text-textSecondary"
+            title="Reset all intervention levers back to baseline values"
+          >
+            <RotateCcw className="size-3" />
+            <span>Reset</span>
+          </Button>
+
+          <Button
+            variant="primary"
+            size="sm"
+            isLoading={isComparing}
+            onClick={onRunScenario}
+            className="shadow-sm gap-1.5 text-xs font-medium"
+          >
+            <PlayCircle className="size-3.5" />
+            <span>{isComparing ? "Simulating..." : "Run Counterfactual"}</span>
+          </Button>
+        </div>
       </div>
 
-      {/* Badges & Actions */}
-      <div className="flex flex-wrap items-center gap-2 shrink-0 self-start md:self-center">
-        <ConfidenceGrade
-          grade={reliabilityGrade as GradeType}
-          sampleSize={baselineSampleSize}
-        />
-        <ProvenanceTag
-          provenance={provenanceType as ProvenanceType}
-          sampleSize={baselineSampleSize}
-        />
-
-        <div className="h-4 w-px bg-hairline hidden sm:block" />
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBackToTwin}
-          className="text-xs text-textSecondary hover:text-textPrimary gap-1 shadow-none"
-        >
-          <ArrowLeft className="size-3.5" />
-          <span>Back to Twin</span>
-        </Button>
-
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onResetToBaseline}
-          className="text-xs gap-1.5 shadow-xs text-textSecondary"
-          title="Reset all intervention levers back to baseline values"
-        >
-          <RotateCcw className="size-3" />
-          <span>Reset</span>
-        </Button>
-
-        <Button
-          variant="primary"
-          size="sm"
-          isLoading={isComparing}
-          onClick={onRunScenario}
-          className="shadow-sm gap-1.5"
-        >
-          <PlayCircle className="size-3.5" />
-          <span>{isComparing ? "Simulating..." : "Run Scenario"}</span>
-        </Button>
+      {/* Subtitle / Context Bar */}
+      <div className="text-[11px] text-textSecondary bg-canvas/60 border border-hairline/70 rounded px-3 py-1.5 flex items-center justify-between flex-wrap gap-2">
+        <span className="font-medium text-textPrimary">
+          "What-If answers: <strong className="text-accent font-semibold">What happens if I change one payment policy?</strong>"
+        </span>
+        <span className="font-mono text-[10px] text-textTertiary">
+          Behavioral DNA Baseline · Common Random Numbers (CRN) Seed 42 · N=1,000 Agents
+        </span>
       </div>
     </div>
   );

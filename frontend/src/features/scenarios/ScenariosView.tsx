@@ -9,10 +9,10 @@ import { ErrorAlert } from "@/components/ui/ErrorAlert";
 import { WhatIfHeader } from "./components/WhatIfHeader";
 import { BaselineReferenceStrip } from "./components/BaselineReferenceStrip";
 import { InterventionBuilder } from "./components/InterventionBuilder";
-import { ScenarioPreviewBanner } from "./components/ScenarioPreviewBanner";
 import { PairedResultsComparison } from "./components/PairedResultsComparison";
 import { CausalAttributionTrail } from "./components/CausalAttributionTrail";
 import { PaymentRailDeltasTable } from "./components/PaymentRailDeltasTable";
+import { StatisticalReproducibilityCard } from "./components/StatisticalReproducibilityCard";
 import { DecisionSummaryCard } from "./components/DecisionSummaryCard";
 import { IncomingHandoffBanners } from "./components/IncomingHandoffBanners";
 
@@ -214,7 +214,7 @@ export const ScenariosView: React.FC = () => {
         randomSeed={randomSeed}
       />
 
-      {/* 4. INTERVENTION BUILDER (LABORATORY LEVERS) */}
+      {/* 4. INTERVENTION BUILDER (SCENARIO CONTROL STRIP) */}
       <InterventionBuilder
         upiDelta={upiDelta}
         onUpiDeltaChange={setUpiDelta}
@@ -235,18 +235,6 @@ export const ScenariosView: React.FC = () => {
         baselineCardMdr={baselineCardMdr}
       />
 
-      {/* 5. SCENARIO PREVIEW (PRE-FLIGHT CONFIGURATION) */}
-      <ScenarioPreviewBanner
-        upiDelta={upiDelta}
-        cardDelta={cardDelta}
-        routingShift={routingShift}
-        maxRetries={maxRetries}
-        cardMdrRate={cardMdrRate}
-        baselineUpiRate={baselineUpiRate}
-        baselineCardRate={baselineCardRate}
-        baselineCardMdr={baselineCardMdr}
-      />
-
       {/* ERROR ALERTS */}
       {isError && (
         <ErrorAlert
@@ -255,7 +243,7 @@ export const ScenariosView: React.FC = () => {
         />
       )}
 
-      {/* 6. PAIRED RESULTS COMPARISON */}
+      {/* 5. PAIRED RESULTS COMPARISON */}
       {activeComparison && (
         <div className="space-y-4">
           {/* Dominant Highlight Cards + Comparative Operational Table */}
@@ -264,7 +252,7 @@ export const ScenariosView: React.FC = () => {
             populationSize={populationSize}
           />
 
-          {/* Causal Attribution Mechanism Chain */}
+          {/* Model-Attributed Mechanism Trail */}
           {activeComparison.attribution_trail && activeComparison.attribution_trail.length > 0 && (
             <CausalAttributionTrail steps={activeComparison.attribution_trail} />
           )}
@@ -274,10 +262,19 @@ export const ScenariosView: React.FC = () => {
             <PaymentRailDeltasTable methodDeltas={activeComparison.method_deltas} />
           )}
 
+          {/* Statistical & Reproducibility Context */}
+          <StatisticalReproducibilityCard
+            comparison={activeComparison}
+            baselineSimulationId={compareResult?.baseline_simulation_id}
+            randomSeed={randomSeed}
+            populationSize={populationSize}
+          />
+
           {/* Decision Synthesis & Pareto Handoff Card */}
           <DecisionSummaryCard
             comparison={activeComparison}
             onHandoffToPareto={handleHandoffToPareto}
+            onBackToTwin={() => setActivePage("twin")}
           />
         </div>
       )}
