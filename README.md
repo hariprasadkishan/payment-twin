@@ -2,6 +2,27 @@
 
 > **Razorpay shows what happened. Payment Twin simulates what could happen next.**
 
+**Payment Twin** is a merchant payment-intelligence and behavioral simulation cockpit built for the **Razorpay AI Buildathon 2026**. Modern payment dashboards show historical performance with high fidelity, but merchants have lacked a pre-deployment simulation workspace to reason about what *could* happen before rolling out policy, routing, or fee changes to live customer traffic.
+
+Payment Twin bridges this gap: it extracts empirical merchant dynamics as **Behavioral DNA**, instantiates calibrated synthetic **Customer Agents**, and simulates discrete-event checkout funnels under counterfactual scenarios to optimize net revenue and conversion before deployment.
+
+---
+
+## Live Demo
+
+> **Payment Twin is live.**  
+> Explore the deployed simulation engine and run the full merchant intelligence workflow directly in your browser.
+
+**[Launch Payment Twin →](https://payment-twin-64qxtq93i-bhoguni.vercel.app)**
+
+* **Frontend Application**: Deployed on [Vercel](https://payment-twin-64qxtq93i-bhoguni.vercel.app) (`React 18 + TypeScript + Vite`)
+* **Production API**: Deployed on [Render](https://payment-twin.onrender.com) (`FastAPI + Python 3.11 + NumPy/SciPy/Pandas`)
+* **Interactive API Documentation (Swagger)**: [https://payment-twin.onrender.com/docs](https://payment-twin.onrender.com/docs)
+
+> [!NOTE]
+> **Demo Mode & Data Calibration**  
+> The live demo runs in calibrated benchmark mode backed by the canonical 650-record retail e-commerce dataset (`data/raw/synthetic_benchmark_retail_ecommerce.jsonl`). Customer Agents represent synthetic cohort behavioral archetypes rather than real individuals or private customer data. The application operates in zero-credential demonstration mode without processing real merchant payments. All simulation outputs, funnel transition metrics, and Pareto frontiers are modeled probabilistic projections based on empirical priors rather than guaranteed real-world financial outcomes.
+
 ---
 
 ## 1. What It Is
@@ -191,7 +212,7 @@ When evaluating the live application, follow this sequence:
 3. **Customer Agents (`#agents`)**: Explore the 1,000 synthetic agent population. Filter by archetype (e.g. *Method Switcher*) and click any agent row to inspect their behavioral fingerprint and decision pathway.
 4. **Payment Guardian (`#guardian`)**: Review the active surveillance status (10 drift tests, BH-FDR $\alpha=0.05$) and expand the mathematical detectors to examine test thresholds.
 5. **Payment Twin (`#twin`)**: In the simulation controls, click **Run Simulation**. Watch the 5-stage funnel compute stage-by-stage on the dark simulation canvas, view drop-off attribution, and open an agent event trace.
-6. **What-If Studio (`#what-if`)**: Adjust a scenario slider (e.g., set UPI Success Shift to `+5.0%` or Max Retries to `2x`) and click **Run Counterfactual**. Observe the exact net revenue delta (+₹38,514) and mechanism and attribution trail.
+6. **What-If Studio (`#scenarios`)**: Adjust a scenario slider (e.g., set UPI Success Shift to `+5.0%` or Max Retries to `2x`) and click **Run Counterfactual**. Observe the exact net revenue delta (+₹38,514) and mechanism and attribution trail.
 7. **Pareto Optimizer (`#pareto`)**: Click **Run Optimization (27)**. Examine the non-dominated frontier scatter plot, select Candidate #9, and inspect the multi-objective trade-off rationale.
 8. **Settings (`#settings`)**: Verify Razorpay API test connectivity and view local dataset repository provenance.
 9. **Global Search**: Press `⌘K` (or `Ctrl+K`) anywhere in the app to open the quick navigation palette.
