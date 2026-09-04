@@ -40,6 +40,14 @@ export default function App() {
     return () => window.removeEventListener("hashchange", checkUrl);
   }, [setActivePage]);
 
+  // Synchronize URL hash with activePage
+  useEffect(() => {
+    const currentHash = window.location.hash.replace("#", "");
+    if (currentHash !== activePage) {
+      window.location.hash = activePage;
+    }
+  }, [activePage]);
+
   const renderActiveView = () => {
     switch (activePage) {
       case "overview":
