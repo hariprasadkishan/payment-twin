@@ -1,145 +1,205 @@
 # Payment Twin
 
-> **A virtual digital twin of a merchant's payment ecosystem for simulating high-stakes payment decisions, predicting customer behavioral dynamics, and guarding live payment health.**
+> **Razorpay shows what happened. Payment Twin simulates what could happen next.**
 
 ---
 
-## 1. Executive Summary & Problem Statement
+## 1. What It Is
 
-In modern digital commerce, payment infrastructure is mission-critical. Merchants constantly make decisions that directly impact their top-line revenue:
-- Switching or load-balancing payment gateways
-- Introducing payment method surcharges or convenience fees
-- Enforcing stricter 3D-Secure (3DS) authentication rules
-- Modifying checkout UI/UX flows or payment method ordering
-- Adjusting instant refund policies or cash-on-delivery (COD) thresholds
+**Payment Twin** is a merchant payment-intelligence and simulation engine. It learns aggregate payment behaviour from empirical transaction data, models the merchant's checkout dynamics as **Behavioral DNA**, instantiates calibrated synthetic **Customer Agents**, and simulates how payment funnels respond to hypothetical interventions before those changes touch live production traffic.
 
-Today, merchants have only two inadequate options:
-1. **Experiment in Production**: Roll out changes live to real customers, risking catastrophic drops in Transaction Success Rates (TSR), checkout abandonment spikes, and irreversible brand damage.
-2. **Retrospective Dashboards**: Analyze historical post-mortems after revenue is already lost. Static reports cannot answer forward-looking *"what-if"* questions.
-
-**Payment Twin** solves this by creating a faithful, statistical, agent-based **digital twin** of a merchant's checkout and payment funnel. It learns the merchant's unique **Behavioral DNA** from empirical Razorpay transaction telemetry and simulates how thousands of heterogeneous synthetic customer agents react to hypothetical interventions in a risk-free sandbox.
+Key capabilities:
+- **Behavioral DNA Extraction**: Learns empirical payment method preferences, success rates, retry dynamics, method-switching propensities, and error origin attribution.
+- **Synthetic Customer Agents**: Generates calibrated populations of synthetic behavioral agents acting under empirical priors (these are mathematical and algorithmic constructs representing customer cohorts, not individual real persons).
+- **Checkout Funnel Simulation**: Simulates the multi-stage payment journey (Session Entry $\to$ Cart $\to$ Rail Selection $\to$ 3DS Authentication $\to$ Gateway Routing) using discrete-event and Monte Carlo simulation.
+- **Counterfactual What-If Studio**: Evaluates policy interventions (e.g., method success shifts, retry caps, routing steering, interchange MDR changes) using Common Random Numbers (CRN) for isolated delta attribution.
+- **Multi-Objective Pareto Optimization**: Explores competing trade-offs across Net Merchant Revenue, Capture Rate, Processing Fees, and Terminal Failures to recommend optimal operating points.
+- **Payment Guardian**: A statistical monitoring companion that continuously tracks operational drift against the learned baseline using dual-gate hypothesis testing (Benjamini-Hochberg FDR + practical effect size thresholds).
 
 ---
 
-## 2. Core Concepts
+## 2. The Problem
 
-### 2.1 The Payment Twin
-The Payment Twin is a stochastic simulation model parameterised by empirical payment data. It does not merely replay past transactions; it models customer intent, patience thresholds, method preferences, retry fatigue, and gateway network dynamics. By perturbing model parameters (e.g., simulating a bank outage, a 1.5% card surcharge, or a friction-reducing 1-click checkout), the Twin predicts the downstream impact on **TSR, GMV, blended processing costs (MDR), and customer drop-off**.
+In modern digital commerce, changing payment policies—such as adjusting retry limits, steering routing across acquirers, or modifying authentication friction—directly impacts top-line revenue and conversion.
 
-### 2.2 Payment Guardian
-While the Twin operates primarily in simulation mode (offline/pre-deployment), the **Payment Guardian** acts as a real-time sentinel in production. It continuously computes statistical drift (such as Population Stability Index and CUSUM control charts) between the **expected digital twin distribution** and the **actual live telemetry stream**. When live behavior diverges significantly from the twin’s baseline (e.g., hidden gateway degradation, unexpected dropouts), Guardian alerts merchants immediately with root-cause diagnostics.
+Traditional payment dashboards explain **historical performance** with high fidelity, showing what already occurred. However, merchants lack a pre-deployment simulation workspace to reason about what *could* happen before rolling out policy changes to live customers. Experimenting in production risks unnecessary payment declines, cart abandonment spikes, and customer frustration.
+
+Payment Twin provides a risk-free counterfactual sandbox to test, compare, and optimize payment decisions before deployment.
 
 ---
 
-## 3. High-Level Architecture & Pipeline
+## 3. What Payment Twin Does (Implemented Flow)
 
-The system is structured as a unidirectional, highly modular analytical and simulation pipeline:
+The system is implemented as an end-to-end analytical and simulation pipeline:
 
 ```
-[ Razorpay Data ] 
-       │ (API / Test Telemetry / Event Webhooks)
+Observed Payment Data (Razorpay API / Benchmark Dataset)
+       │
        ▼
-[ 1. Data Ingestion & Sanitization ]
-       │ (Validation, Normalization, PII Redaction)
+1. PII Sanitization & Data Normalization
+       │
        ▼
-[ 2. Behavioral DNA Profiling ]
-       │ (Markov Transition Matrices, Latency Hazard Functions, Method Priors)
+2. Behavioral DNA Engine (Empirical Priors, Wilson CIs, Transition Matrices)
+       │
        ▼
-[ 3. Synthetic Customer Agents ]
-       │ (Heterogeneous Archetypes: Patience, Method Preferences, Elasticity)
+3. Synthetic Customer Agents (Calibrated Behavioral Archetypes & Decision Rules)
+       │
        ▼
-[ 4. Payment Twin Simulation Engine ] ◄── [ 5. What-If Scenario Engine ]
-       │ (Monte Carlo & Discrete-Event Runs)     (Policies, Fees, Outages, Routing)
+4. Payment Twin Simulation (Discrete-Event Funnel & Stochastic Event Accounting)
+       │
        ▼
-[ 6. Multi-Scenario Comparison ]
-       │ (Delta Matrices, Confidence Intervals, Distribution Shifts)
+5. What-If Studio (Paired Counterfactual Scenarios with Mechanism and Attribution Trails)
+       │
        ▼
-[ 7. Pareto Optimization ]
-       │ (Multi-Objective Frontier: Maximize GMV/TSR vs. Minimize Cost/Friction)
+6. Pareto Optimizer (Multi-Objective Non-Dominated Policy Frontier)
+       │
        ▼
-[ 8. Explainability & Attribution ]
-       │ (Causal Decomposition & Sensitivity Analysis)
-       ▼
-[ 9. Payment Guardian ] ◄── [ Live Production Telemetry ]
-       │ (Real-time Anomaly & Distributional Drift Detection)
-       ▼
-[ 10. FastAPI Backend ] ──► [ 11. React + TypeScript Cockpit & D3 Visualizer ]
+7. Payment Guardian (Statistical Drift Monitoring & Baseline Diagnostics)
 ```
 
 ---
 
-## 4. Main Planned Features
+## 4. Product Workspaces
 
-1. **Razorpay Data Ingestion Pipeline**: Ingests payment events, orders, refunds, gateway latencies, and error codes from Razorpay APIs or test datasets.
-2. **Behavioral DNA Engine**: Extracts statistical profiles (conversion transition probabilities, dropout hazard rates, method affinity matrices, retry fatigue curves).
-3. **Synthetic Customer Agent Generator**: Generates realistic, heterogeneous populations of autonomous customer agents sampled from multivariate behavioral distributions.
-4. **Payment Twin Simulation Engine**: Executes discrete-event Monte Carlo simulations across checkout stages with configurable seeds and sample sizes.
-5. **What-If Scenario Engine**: Enables merchants to formulate complex business and infrastructure interventions without touching production code.
-6. **Multi-Scenario Comparison**: Side-by-side comparative matrices visualizing TSR deltas, GMV variance, fee impacts, and dropout stages across multiple scenarios.
-7. **Pareto Optimization Engine**: Computes non-dominated trade-off frontiers across competing objectives (e.g., maximizing conversion vs. minimizing gateway processing fees).
-8. **Explainable Simulation Engine**: Decomposes simulation outcome deltas into transparent attribution factors (e.g., "70% of conversion drop was driven by 3DS drop-off among HDFC cardholders").
-9. **Payment Guardian**: Real-time runtime monitor computing distributional divergence between twin expectations and live transactions.
-10. **FastAPI Backend**: Async, high-throughput REST and WebSocket service powered by Pydantic v2 schemas and structured logging.
-11. **React + TypeScript Cockpit**: Modern, responsive merchant cockpit designed with Razorpay-grade design aesthetics.
-12. **Animated Customer-Agent Funnel Visualizer**: Dynamic D3.js/Canvas-driven visualization illustrating real-time agent progression, retry loops, and drop-off bottlenecks.
-13. **Production-Grade Testing & Observability**: Complete unit, integration, and statistical invariant test suite with structured logging.
-14. **Containerized Deployment**: Clean Dockerized setup ready for cloud deployment.
+Payment Twin provides 8 dedicated operational workspaces:
+
+| # | Workspace | Purpose & Description |
+| :-: | :--- | :--- |
+| **1** | **Overview** | Merchant command center displaying captured payment volume, baseline capture rates, payment rail mix (UPI, Card, Netbanking, Wallet), Guardian attention signals, and rapid intelligence pathways. |
+| **2** | **Behavioral DNA** | Empirical baseline profile derived from transaction records. Displays method selection priors with 95% Wilson confidence intervals, amount distribution quantiles (P10–P99), retry and method-switch dynamics, and error origin attribution. |
+| **3** | **Customer Agents** | Inspector for the synthetic agent population calibrated to the merchant's DNA. Features archetype filtering (Fast Checkout, Patient Retryer, Method Switcher, High Ticket), behavioral fingerprints ($P_{\text{retry}}$, friction tolerance), and step-by-step decision pathways. |
+| **4** | **Payment Guardian** | Continuous statistical drift sentinel. Uses dual-gate testing (Benjamini-Hochberg FDR correction at $\alpha=0.05$ combined with effect size thresholds) across 10 drift detectors (PSI, Z-Test, Fisher Exact, Two-Sample KS, CUSUM) to detect meaningful divergence from baseline. |
+| **5** | **Payment Twin** | Flagship simulation workspace. Features a dark simulation instrument executing a 5-stage checkout funnel (Session $\to$ Cart $\to$ Rail $\to$ Auth $\to$ Gateway) with configurable population size, deterministic PRNG seed, terminal outcome accounting, and individual agent trace drawers. |
+| **6** | **What-If Studio** | Counterfactual decision workspace. Allows merchants to manipulate policy levers (UPI success shift, card success shift, rail preference, retry budgets, interchange MDR) using paired Common Random Numbers (CRN) to isolate exact revenue and conversion deltas. |
+| **7** | **Pareto Optimizer** | Multi-objective optimization workspace. Evaluates a Cartesian search grid of policy interventions against competing objectives (Net Revenue vs. Capture Rate vs. Processing Fees vs. Failure Rate) with hard feasibility guardrails and recommended operating points. |
+| **8** | **Settings** | Configuration and operational diagnostics. Manages Razorpay API test credentials, synthetic benchmark data synchronization, stochastic engine defaults, dataset repository logs, and backend service health. |
 
 ---
 
-## 5. Planned Technology Stack
+## 5. How the Simulation Works
 
-| Layer | Technology | Rationale & Responsibility |
-| :--- | :--- | :--- |
-| **Backend Framework** | **Python 3.11+ / FastAPI** | High performance, native async support, automated OpenAPI specs, robust ecosystem. |
-| **Data Contracts** | **Pydantic v2** | Strict validation of observed data, scenario configurations, and simulation outputs. |
-| **Data Processing** | **Pandas / NumPy** | Vectorized aggregation, data transformation, transition probability calculations. |
-| **Simulation Core** | **Custom Engine / Python** *(evaluating Mesa)* | Discrete-event agent lifecycle execution with deterministic Monte Carlo seeding. |
-| **ML & Statistics** | **scikit-learn / SciPy** | Kernel Density Estimation (KDE), Markov chains, statistical hypothesis testing (KS-test, PSI). |
-| **Optimization** | **SciPy** | Multi-objective optimization, linear/non-linear programming, Pareto frontier generation. |
-| **Frontend Cockpit** | **React 18+ / TypeScript / Vite** | Type-safe, component-driven UI with instant HMR and high developer velocity. |
-| **Styling & Design** | **Tailwind CSS + Custom Tokens** | Bespoke design system inspired by Razorpay’s enterprise fintech aesthetic. |
-| **Funnel Visualizations** | **D3.js / HTML5 Canvas** | High-performance particle/agent rendering and dynamic funnel flow diagrams. |
-| **Storage / Database** | **SQLite (initial) / PostgreSQL** | Lightweight relational storage for scenarios, simulation runs, and baseline DNA profiles. |
-| **Testing** | **pytest / pytest-asyncio / HTTPX** | Automated unit, regression, and statistical invariant testing. |
-| **Version Control** | **Git + GitHub** | Versioned repository tracking and collaborative CI/CD workflows. |
+Payment Twin relies strictly on **verifiable statistical, probabilistic, and discrete-event simulation methods** (it does not rely on opaque LLM hallucinations for numerical simulation):
+
+1. **Empirical Calibration**: Behavioral DNA fits probability distributions (Dirichlet-Multinomial priors, log-normal ticket sizes, empirical transition matrices) directly from sanitized transaction records.
+2. **Synthetic Population Generation**: Synthetic agents are instantiated with parameter vectors ($\text{AOV}$, method preference vector, retry patience threshold, friction sensitivity) sampled from the fitted distributions.
+3. **Discrete-Event Simulation**: As agents traverse the funnel stages, outcomes are evaluated using Bernoulli and Categorical sampling. Failed attempts trigger conditional retry and method-switch loops governed by each agent's behavioral budget.
+4. **Common Random Numbers (CRN)**: Counterfactual scenarios in What-If Studio reuse identical pseudo-random number seeds across paired baseline and scenario runs. This isolates modeled policy intervention shifts from random seed variance (variance reduction via matched random draws).
+5. **Multi-Objective Optimization**: The Pareto Optimizer employs Pareto dominance criteria to filter out dominated configurations and surface the non-dominated trade-off frontier.
+6. **Drift Detection**: Payment Guardian applies classical statistical hypothesis tests (Two-Proportion Z-Tests, Two-Sample Kolmogorov-Smirnov, Population Stability Index, CUSUM) with False Discovery Rate controls to identify real statistical drift without crying wolf.
 
 ---
 
-## 6. Development Philosophy & Guardrails
+## 6. Architecture
 
-- **Statistical Rigor over Smoke & Mirrors**: No fake AI, no hardcoded demo scripts pretending to be intelligent, and no black-box placeholders. Every simulation output must be mathematically grounded in probability distributions, empirical transition matrices, or explicit agent utility functions.
-- **Strict Separation of Concerns**: Observed data (facts), Behavioral DNA (statistical models), Synthetic Agents (actors), Scenarios (interventions), and Simulation Results (outcomes) are isolated data structures with clear schema boundaries.
-- **Explainability as a First-Class Citizen**: A prediction without an explanation is useless to a merchant. Every scenario result must provide causal decomposition and sensitivity analysis.
-- **Modular & Extensible**: Clean interfaces between ingestion, modeling, simulation, API, and UI layers to support progressive enhancement and long-term maintainability.
+For the complete technical specification, system taxonomies, checkout state machine diagrams, and mathematical formulas, see:
 
----
+👉 [**docs/architecture.md**](docs/architecture.md)
 
-## 7. How the System Will Eventually Work
+### Pipeline Overview
 
-1. **Baseline Ingestion**: The merchant imports historical or test transaction logs via Razorpay API or CSV upload.
-2. **DNA Synthesis**: The backend processes the telemetry into a **Behavioral DNA Profile** representing historical customer and gateway characteristics.
-3. **Scenario Definition**: In the React Cockpit, the merchant builds a scenario (e.g., *"Add 2% surcharge on Credit Cards and route UPI to Gateway X with simulated 5% latency increase"*).
-4. **Simulation Execution**: The FastAPI engine spawns a population of synthetic customer agents matching the merchant's DNA profile and runs a Monte Carlo discrete-event simulation.
-5. **Insights & Optimization**: The frontend displays animated funnel transitions, delta comparison tables, Pareto trade-off curves, and explainability breakdowns.
-6. **Live Guardian Monitoring**: Once a policy is deployed live, Payment Guardian monitors the live event stream against the Twin's baseline to detect drift or unintended consequences immediately.
-
----
-
-## 8. Directory Structure
-
+```mermaid
+flowchart LR
+    RP["Razorpay Telemetry / Benchmark"] --> INGEST["Ingestion & PII Redaction"]
+    INGEST --> DNA["Behavioral DNA Engine"]
+    DNA --> AGENTS["Synthetic Customer Agents"]
+    AGENTS --> TWIN["Payment Twin Simulator"]
+    TWIN --> WHATIF["What-If Studio (CRN)"]
+    WHATIF --> PARETO["Pareto Optimizer"]
+    DNA -. Baseline .-> GUARDIAN["Payment Guardian Sentinel"]
+    RP -. Telemetry .-> GUARDIAN
+    TWIN & WHATIF & PARETO & GUARDIAN --> API["FastAPI Service Layer"]
+    API --> UI["React + TypeScript Cockpit"]
 ```
-payment-twin/
-├── README.md                  # Project overview and specifications (this file)
-├── .gitignore                 # Comprehensive Git ignore rules
-├── .env.example               # Environment configuration template
-├── docs/                      # Technical documentation
-│   ├── architecture.md        # Detailed system architecture & data taxonomy
-│   └── development-plan.md    # Phased roadmap and milestone breakdown
-├── backend/                   # FastAPI backend application (Phase 1+)
-├── frontend/                  # React + TypeScript frontend (Phase 10+)
-├── data/                      # Dataset directories
-│   ├── raw/                   # Raw ingested transaction dumps (.gitkeep)
-│   └── processed/             # Cleaned and processed DNA datasets (.gitkeep)
-└── tests/                     # Automated test suite (.gitkeep)
+
+---
+
+## 7. Tech Stack
+
+### Frontend
+- **Framework**: React 18 with TypeScript
+- **Build Tool**: Vite 5.4
+- **Styling**: Tailwind CSS (bespoke fintech theme inspired by Ledgerix / Mercury / Stripe)
+- **State Management & Data Fetching**: TanStack React Query v5 & Zustand
+- **Visualization & Icons**: D3.js, Lucide React, Framer Motion
+
+### Backend
+- **Framework**: Python 3.11+ / FastAPI (fully asynchronous REST service)
+- **Data Modeling & Validation**: Pydantic v2
+- **Numerical & Statistical Computing**: NumPy, SciPy, Pandas, scikit-learn
+- **HTTP Client**: HTTPX
+
+### Automated Testing
+- **Test Runner**: Pytest (12 automated test suites covering ingestion, profiling, agents, simulation, optimization, and drift detection)
+- **Frontend Validation**: TypeScript compiler (`tsc --noEmit`) and Vite production build validation
+
+---
+
+## 8. Quick Start
+
+### Prerequisites
+- **Python 3.11+**
+- **Node.js 18+** and `npm`
+
+---
+
+### Step 1: Start the Backend Service
+
+```bash
+cd backend
+
+# Create and activate a Python virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install backend dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# Start the FastAPI server (runs on port 8000)
+uvicorn app.main:app --port 8000 --reload
 ```
+
+The backend will start at `http://localhost:8000`.
+Interactive Swagger API documentation is available at `http://localhost:8000/docs`.
+
+---
+
+### Step 2: Start the Frontend Application
+
+Open a second terminal window:
+
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
+```
+
+The frontend will start at `http://localhost:5173`. Open this URL in your browser.
+
+---
+
+## 9. Reviewer & Judge Walkthrough (3-Minute Tour)
+
+When evaluating the live application, follow this sequence:
+
+1. **Overview (`#overview`)**: Review aggregate merchant volume (₹12,13,854, 83.5% capture rate), rail distribution needles, and system sentinel status.
+2. **Behavioral DNA (`#dna`)**: Inspect the empirical foundation—rail mix priors with Wilson confidence intervals, quantile distribution slider, and error origin attribution.
+3. **Customer Agents (`#agents`)**: Explore the 1,000 synthetic agent population. Filter by archetype (e.g. *Method Switcher*) and click any agent row to inspect their behavioral fingerprint and decision pathway.
+4. **Payment Guardian (`#guardian`)**: Review the active surveillance status (10 drift tests, BH-FDR $\alpha=0.05$) and expand the mathematical detectors to examine test thresholds.
+5. **Payment Twin (`#twin`)**: In the simulation controls, click **Run Simulation**. Watch the 5-stage funnel compute stage-by-stage on the dark simulation canvas, view drop-off attribution, and open an agent event trace.
+6. **What-If Studio (`#what-if`)**: Adjust a scenario slider (e.g., set UPI Success Shift to `+5.0%` or Max Retries to `2x`) and click **Run Counterfactual**. Observe the exact net revenue delta (+₹38,514) and mechanism and attribution trail.
+7. **Pareto Optimizer (`#pareto`)**: Click **Run Optimization (27)**. Examine the non-dominated frontier scatter plot, select Candidate #9, and inspect the multi-objective trade-off rationale.
+8. **Settings (`#settings`)**: Verify Razorpay API test connectivity and view local dataset repository provenance.
+9. **Global Search**: Press `⌘K` (or `Ctrl+K`) anywhere in the app to open the quick navigation palette.
+
+---
+
+## 10. Data Provenance & Known Limitations
+
+- **Synthetic Benchmark Foundation**: For zero-credential evaluation, the repository includes a canonical 650-record retail e-commerce dataset (`data/raw/synthetic_benchmark_retail_ecommerce.jsonl`). If no live Razorpay API keys are configured, Payment Twin automatically boots into this calibrated benchmark mode with clear visual badges.
+- **Privacy & PII**: The system strictly redacts customer PII (no customer emails, names, phone numbers, or plain PANs are ever stored or processed).
+- **Simulation Disclaimer**: Forward simulation outputs are probabilistic projections based on empirical priors and stochastic agent rules; they do not constitute guaranteed financial outcomes.

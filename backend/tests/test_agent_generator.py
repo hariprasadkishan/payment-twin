@@ -396,15 +396,25 @@ def test_api_generate_agents_endpoint_with_calibrated_dna(
         app.dependency_overrides.clear()
 
 
-def test_api_generate_agents_endpoint_with_empty_repository(client: TestClient) -> None:
+def test_api_generate_agents_endpoint_with_empty_repository(
+    client: TestClient, tmp_path: Path
+) -> None:
     """
     Verify that POST /api/v1/agents/generate refuses generation when data/raw is empty.
     """
-    # Call endpoint without dependency overrides on fresh empty directory
-    req_payload = {"population_size": 100, "random_seed": 42}
-    res = client.post("/api/v1/agents/generate", json=req_payload)
-    assert res.status_code == 200
-    data = res.json()
-    assert data["status"] == "unavailable"
-    assert data["total_generated_count"] == 0
-    assert "Behavioral DNA is empty or unavailable" in data["message"]
+    from app.api.routes.agents import get_dna_profiler
+
+    empty_loader = DatasetLoaderService(raw_data_dir=str(tmp_path))
+    empty_profiler = BehavioralDNAProfiler(loader=empty_loader)
+    app.dependency_overrides[get_dna_profiler] = lambda: empty_profiler
+
+    try:
+        req_payload = {"population_size": 100, "random_seed": 42}
+        res = client.post("/api/v1/agents/generate", json=req_payload)
+        assert res.status_code == 200
+        data = res.json()
+        assert data["status"] == "unavailable"
+        assert data["total_generated_count"] == 0
+        assert "Behavioral DNA is empty or unavailable" in data["message"]
+    finally:
+        app.dependency_overrides.clear()
