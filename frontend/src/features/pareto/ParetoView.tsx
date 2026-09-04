@@ -19,6 +19,7 @@ import { ParetoFrontierChart } from "./components/ParetoFrontierChart";
 import { FrontierCandidatesTable } from "./components/FrontierCandidatesTable";
 import { CandidateInspectorDrawer } from "./components/CandidateInspectorDrawer";
 import { DecisionSynthesisCard } from "./components/DecisionSynthesisCard";
+import { ParetoUncertaintyCard } from "./components/ParetoUncertaintyCard";
 import { IncomingScenarioHandoffBanner } from "./components/IncomingScenarioHandoffBanner";
 
 export const ParetoView: React.FC = () => {
@@ -138,11 +139,6 @@ export const ParetoView: React.FC = () => {
     runOptimization(1000, 42, 80.0, 18.0, 15000, true);
   };
 
-  const handleSelectCandidate = (candidate: ParetoScenarioItem | InfeasibleScenarioItem) => {
-    setSelectedCandidate(candidate);
-    setIsInspectorOpen(true);
-  };
-
   // Authoritative recommended operating point (highest net merchant revenue on frontier)
   const recommendedCandidate = useMemo(() => {
     if (!paretoResult || !paretoResult.frontier_scenarios || paretoResult.frontier_scenarios.length === 0) {
@@ -155,8 +151,12 @@ export const ParetoView: React.FC = () => {
     });
   }, [paretoResult]);
 
+  const handleSelectCandidate = (candidate: ParetoScenarioItem | InfeasibleScenarioItem) => {
+    setSelectedCandidate(candidate);
+  };
+
   const handleOpenInWhatIf = (_candidate?: ParetoScenarioItem) => {
-    // Navigate back to What-If Studio
+    // Navigate to What-If Studio
     setActivePage("scenarios");
   };
 
@@ -221,7 +221,10 @@ export const ParetoView: React.FC = () => {
 
       {/* 5. ANALYTICAL SUMMARY STRIP (AFTER RUN) */}
       {paretoResult && (
-        <OptimizationSummaryStrip result={paretoResult} />
+        <OptimizationSummaryStrip
+          result={paretoResult}
+          preferredCandidate={recommendedCandidate}
+        />
       )}
 
       {/* 6. PARETO FRONTIER SCATTER INSTRUMENT (THE CENTERPIECE) */}
@@ -231,7 +234,7 @@ export const ParetoView: React.FC = () => {
           dominatedScenarios={paretoResult.dominated_scenarios}
           infeasibleScenarios={paretoResult.infeasible_scenarios}
           baselineSummary={paretoResult.baseline_summary}
-          selectedCandidateId={selectedCandidate?.scenario_id}
+          selectedCandidateId={selectedCandidate?.scenario_id || recommendedCandidate?.scenario_id}
           onSelectCandidate={handleSelectCandidate}
           xAxisKey={xAxisKey}
           onXAxisKeyChange={setXAxisKey}
@@ -240,28 +243,45 @@ export const ParetoView: React.FC = () => {
         />
       )}
 
-      {/* 7. CANDIDATE EVALUATION TABLE */}
+      {/* 7. SELECTED POLICY SUMMARY & DECISION SYNTHESIS */}
+      {paretoResult && (
+        <DecisionSynthesisCard
+          selectedCandidate={(selectedCandidate as ParetoScenarioItem) || recommendedCandidate}
+          recommendedCandidate={recommendedCandidate}
+          baselineSummary={paretoResult.baseline_summary}
+          onOpenInWhatIf={handleOpenInWhatIf}
+          onOpenInTwin={() => setActivePage("twin")}
+          onInspectDrawer={(cand) => {
+            setSelectedCandidate(cand);
+            setIsInspectorOpen(true);
+          }}
+        />
+      )}
+
+      {/* 8. CANDIDATE EVALUATION TABLE */}
       {paretoResult && (
         <FrontierCandidatesTable
           frontierScenarios={paretoResult.frontier_scenarios}
           dominatedScenarios={paretoResult.dominated_scenarios}
-          selectedCandidateId={selectedCandidate?.scenario_id}
+          selectedCandidateId={selectedCandidate?.scenario_id || recommendedCandidate?.scenario_id}
+          preferredCandidateId={recommendedCandidate?.scenario_id}
           onSelectCandidate={handleSelectCandidate}
         />
       )}
 
-      {/* 8. DECISION SYNTHESIS & RECOMMENDED OPERATING POINT */}
-      {paretoResult && recommendedCandidate && (
-        <DecisionSynthesisCard
-          recommendedCandidate={recommendedCandidate}
-          baselineSummary={paretoResult.baseline_summary}
-          onOpenInWhatIf={handleOpenInWhatIf}
+      {/* 9. STATISTICAL UNCERTAINTY & REPRODUCIBILITY CONTEXT */}
+      {paretoResult && (
+        <ParetoUncertaintyCard
+          result={paretoResult}
+          populationSize={populationSize}
+          randomSeed={randomSeed}
+          preferredCandidate={recommendedCandidate}
         />
       )}
 
-      {/* 9. SELECTED CANDIDATE INSPECTOR DRAWER */}
+      {/* 10. SELECTED CANDIDATE INSPECTOR DRAWER */}
       <CandidateInspectorDrawer
-        candidate={selectedCandidate}
+        candidate={selectedCandidate || recommendedCandidate}
         baselineSummary={paretoResult?.baseline_summary}
         isOpen={isInspectorOpen}
         onClose={() => setIsInspectorOpen(false)}
@@ -270,3 +290,4 @@ export const ParetoView: React.FC = () => {
     </div>
   );
 };
+
