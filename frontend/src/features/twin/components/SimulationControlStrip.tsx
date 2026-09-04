@@ -34,7 +34,7 @@ export const SimulationControlStrip: React.FC<SimulationControlStripProps> = ({
   return (
     <section className="rounded-lg border border-hairline bg-surface p-4 shadow-panel space-y-3.5">
       {/* Instrumentation Control Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-hairline pb-3">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-hairline pb-3">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
             <Sliders className="size-3.5 text-accent" strokeWidth={1.75} />
@@ -52,7 +52,7 @@ export const SimulationControlStrip: React.FC<SimulationControlStripProps> = ({
         </div>
 
         {/* Mode Selector Tabs */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-start lg:self-center">
           <Tabs value={simMode} onValueChange={(val) => onSimModeChange(val as any)}>
             <TabsList>
               <TabsTrigger value="single">Single Deterministic Run</TabsTrigger>
@@ -63,9 +63,9 @@ export const SimulationControlStrip: React.FC<SimulationControlStripProps> = ({
       </div>
 
       {/* Control Grid - Open hierarchy with subtle column dividers on desktop */}
-      <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-        {/* Col 1: Population Size (5 cols) */}
-        <div className="sm:col-span-4 space-y-2 pr-0 sm:pr-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 items-center">
+        {/* Col 1: Population Size */}
+        <div className="md:col-span-1 lg:col-span-4 space-y-2 pr-0 lg:pr-3">
           <div className="flex items-center justify-between text-xs">
             <span className="text-[11px] font-medium text-textSecondary uppercase tracking-wider">
               Population Size (N)
@@ -98,8 +98,8 @@ export const SimulationControlStrip: React.FC<SimulationControlStripProps> = ({
           </span>
         </div>
 
-        {/* Col 2: Master Seed (CRN) (3 cols) with desktop hairline divider */}
-        <div className="sm:col-span-3 space-y-2 border-t sm:border-t-0 sm:border-l border-hairline pt-3 sm:pt-0 sm:pl-4">
+        {/* Col 2: Master Seed (CRN) */}
+        <div className="md:col-span-1 lg:col-span-3 space-y-2 border-t md:border-t-0 lg:border-l border-hairline pt-3 md:pt-0 lg:pl-4">
           <div className="flex items-center justify-between text-xs">
             <span className="text-[11px] font-medium text-textSecondary uppercase tracking-wider">
               Deterministic Seed
@@ -133,8 +133,8 @@ export const SimulationControlStrip: React.FC<SimulationControlStripProps> = ({
           </span>
         </div>
 
-        {/* Col 3: Scope / Sweeps (3 cols) with desktop hairline divider */}
-        <div className="sm:col-span-3 space-y-2 border-t sm:border-t-0 sm:border-l border-hairline pt-3 sm:pt-0 sm:pl-4">
+        {/* Col 3: Scope / Sweeps */}
+        <div className="md:col-span-1 lg:col-span-3 space-y-2 border-t lg:border-t-0 lg:border-l border-hairline pt-3 lg:pt-0 lg:pl-4">
           <div className="flex items-center justify-between text-xs">
             <span className="text-[11px] font-medium text-textSecondary uppercase tracking-wider">
               {simMode === "monte_carlo" ? "Monte Carlo Sweeps" : "Execution Model"}
@@ -174,8 +174,8 @@ export const SimulationControlStrip: React.FC<SimulationControlStripProps> = ({
           </span>
         </div>
 
-        {/* Col 4: Primary Run Button (2 cols) */}
-        <div className="sm:col-span-2 pt-2 sm:pt-0">
+        {/* Col 4: Primary Run Button */}
+        <div className="md:col-span-1 lg:col-span-2 pt-2 md:pt-0">
           <Button
             variant="primary"
             size="md"

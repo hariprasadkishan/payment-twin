@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRunSimulation, useRunMonteCarlo } from "@/hooks/useSimulation";
 import { useDNAStatus } from "@/hooks/useDNA";
 import { useAppStore } from "@/store/useAppStore";
@@ -17,6 +18,8 @@ import { AgentTraceDrawer } from "./components/AgentTraceDrawer";
 import { MonteCarloUncertaintyPanel } from "./components/MonteCarloUncertaintyPanel";
 import { WhatIfHandoffBanner } from "./components/WhatIfHandoffBanner";
 import { GuardianContextAlert } from "./components/GuardianContextAlert";
+import { IntelligencePipelineIntro } from "./components/IntelligencePipelineIntro";
+import { TwinReproducibilityProvenance } from "./components/TwinReproducibilityProvenance";
 
 export const TwinView: React.FC = () => {
   const { 
@@ -27,6 +30,9 @@ export const TwinView: React.FC = () => {
   } = useAppStore();
 
   const { data: dnaStatus } = useDNAStatus();
+
+  // Primary view state: Default to operational simulation workspace
+  const [viewState, setViewState] = useState<"workspace" | "intro">("workspace");
 
   // Mode and Control State
   const [simMode, setSimMode] = useState<"single" | "monte_carlo">("single");
@@ -135,103 +141,141 @@ export const TwinView: React.FC = () => {
     : 0;
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto pb-12">
-      {/* 1. COMPACT OPERATIONAL HEADER */}
-      <TwinHeader
-        reliabilityGrade={dnaStatus?.confidence_grade}
-        provenanceType={dnaStatus?.provenance_type}
-        baselineSampleSize={dnaStatus?.available_sample_count ?? 650}
-        isSimulating={isSimulating}
-        onRunSimulation={handleRun}
-        hasResult={!!singleResult?.kpis}
-        onHandoffToWhatIf={handleHandoffToWhatIf}
-      />
-
-      {/* 2. GUARDIAN CONTEXT ALERT (IF ARRIVED FROM GUARDIAN) */}
-      {activeTwinHandoff && (
-        <GuardianContextAlert
-          handoff={activeTwinHandoff}
-          onDismiss={() => setActiveTwinHandoff(null)}
-        />
-      )}
-
-      {/* 3. SIMULATION CONTROL STRIP */}
-      <SimulationControlStrip
-        simMode={simMode}
-        onSimModeChange={setSimMode}
-        populationSize={populationSize}
-        onPopulationSizeChange={setPopulationSize}
-        randomSeed={randomSeed}
-        onRandomSeedChange={setRandomSeed}
-        monteCarloRuns={monteCarloRuns}
-        onMonteCarloRunsChange={setMonteCarloRuns}
-        isSimulating={isSimulating}
-        onRun={handleRun}
-      />
-
-      {/* ERROR ALERTS */}
-      {(isSingleError || isMonteCarloError) && (
-        <ErrorAlert
-          title="Simulation Execution Failed"
-          message={((singleError || monteCarloError) as Error)?.message || "Failed to execute discrete simulation."}
-        />
-      )}
-
-      {/* 4. PRIMARY FUNNEL VISUALIZATION INSTRUMENT (CENTERPIECE) */}
-      <PaymentFunnelInstrument
-        simulationResult={singleResult || null}
-        isSimulating={isSimulating}
-        populationSize={populationSize}
-      />
-
-      {/* 5. SINGLE-RUN OUTCOMES & ATTRIBUTION */}
-      {singleResult && singleResult.kpis && simMode === "single" && (
-        <div className="space-y-4">
-          {/* Executive Summary: Two Dominant Anchors + Supporting Ribbon */}
-          <SimulationExecutiveSummary
-            kpis={singleResult.kpis}
-          />
-
-          {/* 2-Column Analytical Split: Rails + Loss Attribution */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <MethodPerformanceBreakdown
-              methodBreakdown={singleResult.method_breakdown}
+    <div className="space-y-6 max-w-7xl mx-auto pb-16">
+      <AnimatePresence mode="wait">
+        {viewState === "intro" ? (
+          <motion.div
+            key="twin-intro-state"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="space-y-4"
+          >
+            <IntelligencePipelineIntro
+              onEnterWorkspace={() => setViewState("workspace")}
             />
-            <FunnelDropoffAttribution
-              dropoffs={singleResult.funnel_dropoffs}
-              totalPopulation={singleResult.kpis.total_agents}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="twin-workspace-state"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="space-y-6"
+          >
+            {/* 1. COMPACT OPERATIONAL HEADER */}
+            <TwinHeader
+              reliabilityGrade={dnaStatus?.confidence_grade}
+              provenanceType={dnaStatus?.provenance_type}
+              baselineSampleSize={dnaStatus?.available_sample_count ?? 650}
+              isSimulating={isSimulating}
+              onRunSimulation={handleRun}
+              hasResult={!!singleResult?.kpis}
+              onHandoffToWhatIf={handleHandoffToWhatIf}
+              onShowIntro={() => setViewState("intro")}
+              isShowingIntro={false}
             />
-          </div>
 
-          {/* Contextual Workflow Bridge: What-If Studio Handoff */}
-          <WhatIfHandoffBanner
-            topBottleneck={topBottleneckKey}
-            bottleneckCount={topBottleneckCount}
-            bottleneckPercent={topBottleneckPercent}
-            onHandoffToWhatIf={handleHandoffToWhatIf}
-          />
+            {/* 2. GUARDIAN CONTEXT ALERT (IF ARRIVED FROM GUARDIAN) */}
+            {activeTwinHandoff && (
+              <GuardianContextAlert
+                handoff={activeTwinHandoff}
+                onDismiss={() => setActiveTwinHandoff(null)}
+              />
+            )}
 
-          {/* Synthetic Customer Agent Lifecycle Traces Table */}
-          {singleResult.preview_agent_traces && singleResult.preview_agent_traces.length > 0 && (
-            <AgentLifecycleTraces
-              traces={singleResult.preview_agent_traces}
-              onSelectTrace={setSelectedAgentTrace}
+            {/* 3. SIMULATION CONTROL STRIP */}
+            <SimulationControlStrip
+              simMode={simMode}
+              onSimModeChange={setSimMode}
+              populationSize={populationSize}
+              onPopulationSizeChange={setPopulationSize}
+              randomSeed={randomSeed}
+              onRandomSeedChange={setRandomSeed}
+              monteCarloRuns={monteCarloRuns}
+              onMonteCarloRunsChange={setMonteCarloRuns}
+              isSimulating={isSimulating}
+              onRun={handleRun}
             />
-          )}
-        </div>
-      )}
 
-      {/* 6. MONTE CARLO UNCERTAINTY ANALYSIS */}
-      {monteCarloResult && simMode === "monte_carlo" && (
-        <MonteCarloUncertaintyPanel result={monteCarloResult} />
-      )}
+            {/* ERROR ALERTS */}
+            {(isSingleError || isMonteCarloError) && (
+              <ErrorAlert
+                title="Simulation Execution Failed"
+                message={((singleError || monteCarloError) as Error)?.message || "Failed to execute discrete simulation."}
+              />
+            )}
 
-      {/* 7. SLIDE-OVER AGENT EVENT TRACE DRAWER */}
-      <AgentTraceDrawer
-        trace={selectedAgentTrace}
-        isOpen={!!selectedAgentTrace}
-        onClose={() => setSelectedAgentTrace(null)}
-      />
+            {/* 4. PRIMARY FUNNEL VISUALIZATION INSTRUMENT (DARK SIMULATION COCKPIT) */}
+            <PaymentFunnelInstrument
+              simulationResult={singleResult || null}
+              isSimulating={isSimulating}
+              populationSize={populationSize}
+            />
+
+            {/* 5. SINGLE-RUN OUTCOMES & ATTRIBUTION */}
+            {singleResult && singleResult.kpis && simMode === "single" && (
+              <div className="space-y-6">
+                {/* Executive Summary: Single Continuous Outcome Ribbon */}
+                <SimulationExecutiveSummary
+                  kpis={singleResult.kpis}
+                />
+
+                {/* 2-Column Analytical Split: Rails + Loss Attribution */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <MethodPerformanceBreakdown
+                    methodBreakdown={singleResult.method_breakdown}
+                  />
+                  <FunnelDropoffAttribution
+                    dropoffs={singleResult.funnel_dropoffs}
+                    totalPopulation={singleResult.kpis.total_agents}
+                  />
+                </div>
+
+                {/* Deterministic Reproducibility & Provenance Panel */}
+                <TwinReproducibilityProvenance
+                  simulationId={singleResult.simulation_id}
+                  randomSeed={singleResult.random_seed}
+                  populationSize={singleResult.kpis.total_agents}
+                  dnaVersion="1.0.0"
+                  provenanceType={singleResult.dna_provenance_type}
+                  executionDurationMs={singleResult.kpis.execution_duration_ms}
+                />
+
+                {/* Contextual Workflow Bridge: What-If Studio Handoff */}
+                <WhatIfHandoffBanner
+                  topBottleneck={topBottleneckKey}
+                  bottleneckCount={topBottleneckCount}
+                  bottleneckPercent={topBottleneckPercent}
+                  onHandoffToWhatIf={handleHandoffToWhatIf}
+                />
+
+                {/* Synthetic Customer Agent Lifecycle Traces Table */}
+                {singleResult.preview_agent_traces && singleResult.preview_agent_traces.length > 0 && (
+                  <AgentLifecycleTraces
+                    traces={singleResult.preview_agent_traces}
+                    onSelectTrace={setSelectedAgentTrace}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* 6. MONTE CARLO UNCERTAINTY ANALYSIS */}
+            {monteCarloResult && simMode === "monte_carlo" && (
+              <MonteCarloUncertaintyPanel result={monteCarloResult} />
+            )}
+
+            {/* 7. SLIDE-OVER AGENT EVENT TRACE DRAWER */}
+            <AgentTraceDrawer
+              trace={selectedAgentTrace}
+              isOpen={!!selectedAgentTrace}
+              onClose={() => setSelectedAgentTrace(null)}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
